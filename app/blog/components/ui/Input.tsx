@@ -1,0 +1,34 @@
+interface InputProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  isDarkMode?: boolean;
+  className?: string;
+  type?: 'text' | 'email' | 'password';
+}
+
+export default function Input({
+  value,
+  onChange,
+  placeholder,
+  isDarkMode = false,
+  className = '',
+  type = 'text',
+}: InputProps) {
+  const baseClasses = 'w-full px-4 py-3 rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500';
+  
+  const themeClasses = isDarkMode 
+    ? 'bg-gray-900 border-gray-600 text-white placeholder-gray-400' 
+    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500';
+
+  return (
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={`${baseClasses} ${themeClasses} ${className}`}
+    />
+  );
+}
+
