@@ -1,34 +1,79 @@
 'use client'
 import { useState, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import MarkdownEditor from '@/components/editor/MarkdownEditor';
 import EditorFooter from '@/components/editor/EditorFooter';
 import TagInput from '@/components/editor/TagInput';
 import { useAtom } from 'jotai';
 import { darkModeAtom } from '@/atoms/blogAtoms';
 import { cn } from '@/lib/utils';
-import { generateTempPostId } from '@/lib/postId';
 import { usePageLeaveWarning } from '@/hooks/usePageLeaveWarning';
 
-export default function EditorPage() {
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+  tags: string[];
+  excerpt: string;
+  date: string;
+  updated?: string;
+}
+
+export default function EditPostPage() {
   const [isDarkMode] = useAtom(darkModeAtom);
   const [title, setTitle] = useState('');
   const [tags, setTags] = useState<string[]>([]);
-  const [tempPostId] = useState(() => generateTempPostId());
+  const [content, setContent] = useState('');
+  const [excerpt, setExcerpt] = useState('');
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  
   const router = useRouter();
+  const params = useParams();
+  const postId = params.id as string;
 
   // 페이지 이탈 경고
   const { confirmLeave } = usePageLeaveWarning({ 
     isDirty,
-    message: '작성 중인 내용이 있습니다. 정말 나가시겠습니까?'
+    message: '수정 중인 내용이 있습니다. 정말 나가시겠습니까?'
   });
+
+  // 게시글 데이터 로드
+  useEffect(() => {
+    const loadPost = async () => {
+      try {
+        const response = await fetch(`/api/posts/${postId}`);
+        const result = await response.json();
+
+        if (result.success) {
+          const post: Post = result.post;
+          setTitle(post.title);
+          setTags(post.tags || []);
+          setContent(post.content);
+          setExcerpt(post.excerpt || '');
+        } else {
+          alert('게시글을 불러올 수 없습니다.');
+          router.push('/blog');
+        }
+      } catch (error) {
+        console.error('Failed to load post:', error);
+        alert('게시글을 불러오는 중 오류가 발생했습니다.');
+        router.push('/blog');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (postId) {
+      loadPost();
+    }
+  }, [postId, router]);
 
   // 변경사항 추적
   useEffect(() => {
     setIsDirty(true);
-  }, [title, tags]);
+  }, [title, tags, content, excerpt]);
 
   const handlePublish = useCallback(async () => {
     if (!title.trim()) {
@@ -49,8 +94,8 @@ export default function EditorPage() {
       return;
     }
 
-    const content = textarea.value;
-    if (!content.trim()) {
+    const editorContent = textarea.value;
+    if (!editorContent.trim()) {
       alert('내용을 입력해주세요.');
       return;
     }
@@ -58,33 +103,33 @@ export default function EditorPage() {
     setSaving(true);
 
     try {
-      const response = await fetch('/api/posts', {
-        method: 'POST',
+      const response = await fetch(`/api/posts/${postId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  title: title.trim(),
-                  tags,
-                  content: content.trim(),
-                  postId: tempPostId,
-                }),
+        body: JSON.stringify({
+          title: title.trim(),
+          tags,
+          content: editorContent.trim(),
+          excerpt: excerpt.trim(),
+        }),
       });
 
       const result = await response.json();
 
       if (result.success) {
-        alert('게시글이 성공적으로 저장되었습니다.');
+        alert('게시글이 성공적으로 수정되었습니다.');
         setIsDirty(false);
         router.push('/blog');
       } else {
         throw new Error(result.error);
       }
     } catch (error) {
-      console.error('Publish failed:', error);
-      alert('게시글 저장에 실패했습니다.');
+      console.error('Update failed:', error);
+      alert('게시글 수정에 실패했습니다.');
     } finally {
       setSaving(false);
     }
-  }, [title, tags, tempPostId, router]);
+  }, [title, tags, excerpt, postId, router]);
 
   const handleCancel = useCallback(() => {
     confirmLeave(() => {
@@ -98,6 +143,16 @@ export default function EditorPage() {
     });
   }, [confirmLeave, router]);
 
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">게시글을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col">
@@ -116,6 +171,22 @@ export default function EditorPage() {
             }
           )}
         />
+        
+        {/* 요약 입력 */}
+        <input 
+          type="text" 
+          value={excerpt}
+          onChange={(e) => setExcerpt(e.target.value)}
+          placeholder="게시글 요약을 입력하세요 (선택사항)"
+          className={cn(
+            'w-full px-0 py-2 text-sm border-none outline-none bg-transparent mt-2',
+            {
+              'text-gray-300 placeholder-gray-500': isDarkMode,
+              'text-gray-600 placeholder-gray-400': !isDarkMode,
+            }
+          )}
+        />
+        
         <TagInput
           tags={tags}
           onTagsChange={setTags}
@@ -123,11 +194,12 @@ export default function EditorPage() {
         />
       </div>
 
-      {/* 마크다운 에디터 - 남은 공간을 모두 사용 */}
+      {/* 마크다운 에디터 */}
       <div className="flex-1">
         <MarkdownEditor 
-          postId={tempPostId}
-          isNewPost={true}
+          initialContent={content}
+          postId={postId}
+          isNewPost={false}
         >
           <MarkdownEditor.Editor />
         </MarkdownEditor>
@@ -135,8 +207,8 @@ export default function EditorPage() {
 
       {/* 하단 푸터 */}
       <EditorFooter 
-        isEdit={false}
-        postId={tempPostId}
+        isEdit={true}
+        postId={postId}
         onPublish={handlePublish}
         onCancel={handleCancel}
         onExit={handleExit}
@@ -145,3 +217,4 @@ export default function EditorPage() {
     </div>
   );
 }
+  

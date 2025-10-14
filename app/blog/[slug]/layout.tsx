@@ -1,14 +1,19 @@
 'use client'
-import { DarkModeProvider, useDarkMode } from '../components/DarkModeProvider';
-import { Provider } from 'jotai';
+import { useAtom } from 'jotai';
+import { darkModeAtom } from '@/atoms/blogAtoms';
+import { cn } from '@/lib/utils';
 
 function DetailLayoutContent({ children }: { children: React.ReactNode }) {
-  const { isDarkMode } = useDarkMode();
+  const [isDarkMode] = useAtom(darkModeAtom);
 
   return (
-    <div className={`min-h-screen transition-colors duration-200 ${
-      isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'
-    }`}>
+    <div className={cn(
+      'min-h-screen transition-colors duration-200',
+      {
+        'bg-gray-900 text-white': isDarkMode,
+        'bg-white text-gray-900': !isDarkMode,
+      }
+    )}>
       <main className="max-w-4xl mx-auto px-4 py-8">
         {children}
       </main>
@@ -22,13 +27,9 @@ export default function DetailLayout({
   children: React.ReactNode;
 }) {
   return (
-    <DarkModeProvider>
-      <Provider>
-        <DetailLayoutContent>
-          {children}
-        </DetailLayoutContent>
-      </Provider>
-    </DarkModeProvider>
+    <DetailLayoutContent>
+      {children}
+    </DetailLayoutContent>
   );
 }
 

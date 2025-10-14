@@ -1,14 +1,20 @@
 'use client'
-import { DarkModeProvider, useDarkMode } from '../blog/components/DarkModeProvider';
 import { Provider } from 'jotai';
+import { useAtom } from 'jotai';
+import { darkModeAtom } from '@/atoms/blogAtoms';
+import { cn } from '@/lib/utils';
 
 function EditorLayoutContent({ children }: { children: React.ReactNode }) {
-  const { isDarkMode } = useDarkMode();
+  const [isDarkMode] = useAtom(darkModeAtom);
 
   return (
-    <div className={`h-screen transition-colors duration-200 ${
-      isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'
-    }`}>
+    <div className={cn(
+      'h-screen transition-colors duration-200',
+      {
+        'bg-gray-900 text-white': isDarkMode,
+        'bg-white text-gray-900': !isDarkMode,
+      }
+    )}>
       <main className="h-full flex flex-col">
         {children}
       </main>
@@ -22,12 +28,10 @@ export default function EditorLayout({
   children: React.ReactNode;
 }) {
   return (
-    <DarkModeProvider>
-      <Provider>
-        <EditorLayoutContent>
-          {children}
-        </EditorLayoutContent>
-      </Provider>
-    </DarkModeProvider>
+    <Provider>
+      <EditorLayoutContent>
+        {children}
+      </EditorLayoutContent>
+    </Provider>
   );
 }

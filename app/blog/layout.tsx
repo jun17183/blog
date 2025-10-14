@@ -1,16 +1,22 @@
 'use client'
-import { DarkModeProvider, useDarkMode } from './components/DarkModeProvider';
-import BlogHeader from './components/BlogHeader';
+import { useAtom } from 'jotai';
 import { Provider } from 'jotai';
+import BlogHeader from '@/components/blog/BlogHeader';
+import { darkModeAtom } from '@/atoms/blogAtoms';
+import { cn } from '@/lib/utils';
 
-function ListLayoutContent({ children }: { children: React.ReactNode }) {
-  const { isDarkMode, toggleDarkMode } = useDarkMode();
+function BlogLayoutContent({ children }: { children: React.ReactNode }) {
+  const [isDarkMode] = useAtom(darkModeAtom);
 
   return (
-    <div className={`min-h-screen transition-colors duration-200 ${
-      isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'
-    }`}>
-      <BlogHeader isDarkMode={isDarkMode} onDarkModeToggle={toggleDarkMode} />
+    <div className={cn(
+      'min-h-screen transition-colors duration-200',
+      {
+        'bg-gray-900 text-white': isDarkMode,
+        'bg-white text-gray-900': !isDarkMode,
+      }
+    )}>
+      <BlogHeader />
       <main className="max-w-4xl mx-auto px-4 py-8">
         {children}
       </main>
@@ -24,12 +30,10 @@ export default function ListLayout({
   children: React.ReactNode;
 }) {
   return (
-    <DarkModeProvider>
-      <Provider>
-        <ListLayoutContent>
-          {children}
-        </ListLayoutContent>
-      </Provider>
-    </DarkModeProvider>
+    <Provider>
+      <BlogLayoutContent>
+        {children}
+      </BlogLayoutContent>
+    </Provider>
   );
 }
