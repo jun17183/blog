@@ -1,39 +1,51 @@
 
 import { cn } from '@/lib/utils';
 
-interface TagsSectionProps {
-  selectedTags: string[];
-  onTagsChange: (tags: string[]) => void;
-  isDarkMode: boolean;
+interface TagWithCount {
+  tag: string;
+  count: number;
 }
 
-const AVAILABLE_TAGS = ['React', 'TypeScript', 'Next.js', 'JavaScript', 'CSS', 'Node.js'];
+interface TagsSectionProps {
+  selectedTag: string | null;
+  onTagChange: (tag: string | null) => void;
+  isDarkMode: boolean;
+  availableTags: TagWithCount[];
+}
 
+/**
+ * 태그 섹션 컴포넌트
+ * - 클릭 가능한 태그 목록 표시
+ * - 태그별 게시글 개수 표시
+ * - 긴 태그명 자동 축약 처리
+ */
 export default function TagsSection({
-  selectedTags,
-  onTagsChange,
+  selectedTag,
+  onTagChange,
   isDarkMode,
+  availableTags,
 }: TagsSectionProps) {
+  // 태그 클릭 핸들러 (토글 방식)
   const handleTagClick = (tag: string) => {
-    const isSelected = selectedTags.includes(tag);
-    if (isSelected) {
-      onTagsChange(selectedTags.filter(t => t !== tag));
+    if (selectedTag === tag) {
+      onTagChange(null); // 선택 해제
     } else {
-      onTagsChange([...selectedTags, tag]);
+      onTagChange(tag); // 새 태그 선택
     }
   };
 
   return (
     <div className={cn(
       'mt-8 p-6 rounded-lg transition-all duration-300',
+      'shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)]',
       {
         'bg-gray-800 border border-gray-700': isDarkMode,
         'bg-gray-50 border border-gray-200': !isDarkMode,
       }
     )}>
       <div className="flex flex-wrap gap-3">
-        {AVAILABLE_TAGS.map((tag) => {
-          const isSelected = selectedTags.includes(tag);
+        {availableTags.map(({ tag, count }) => {
+          const isSelected = selectedTag === tag;
           return (
             <button
               key={tag}
@@ -57,7 +69,11 @@ export default function TagsSection({
                 }
               )}
             >
-              {tag}
+              {(() => {
+                // 긴 태그명 축약 처리 (20자 초과 시 ... 표시)
+                const displayTag = tag.length > 20 ? tag.substring(0, 20) + '...' : tag;
+                return `#${displayTag} (${count})`;
+              })()}
             </button>
           );
         })}

@@ -10,11 +10,16 @@ const CONTENTS_DIR = join(process.cwd(), 'contents');
  * 고유한 slug 생성 (중복 방지)
  */
 async function generateUniqueSlug(title: string): Promise<string> {
-  // 기본 slug 생성
+  // 제목이 비어있거나 공백만 있는 경우 처리
+  if (!title || !title.trim()) {
+    return 'untitled';
+  }
+
+  // 기본 slug 생성 (한글, 영문, 숫자, 하이픈만 허용)
   let baseSlug = title
     .toLowerCase()
     .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
+    .replace(/[^a-z0-9가-힣-]/g, '')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
 
@@ -37,7 +42,7 @@ async function generateUniqueSlug(title: string): Promise<string> {
         if (frontmatter.slug) {
           existingSlugs.add(frontmatter.slug);
         }
-      } catch (error) {
+      } catch {
         // 파일 읽기 실패 시 무시
         continue;
       }
@@ -53,7 +58,7 @@ async function generateUniqueSlug(title: string): Promise<string> {
     }
 
     return slug;
-  } catch (error) {
+  } catch {
     // 디렉토리 읽기 실패 시 기본 slug 반환
     return baseSlug;
   }
@@ -64,7 +69,7 @@ async function generateUniqueSlug(title: string): Promise<string> {
  */
 export async function POST(request: NextRequest) {
   try {
-    const { content, title, tags, excerpt, postId } = await request.json();
+    const { content, title, tags, postId } = await request.json();
 
     if (!content || !title) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -84,9 +89,8 @@ export async function POST(request: NextRequest) {
     const frontmatter = `---
 title: "${title}"
 slug: "${uniqueSlug}"
-date: "${new Date().toISOString().split('T')[0]}"
+date: "${new Date().toISOString()}"
 tags: ${JSON.stringify(tags || [])}
-excerpt: "${excerpt || ''}"
 published: true
 ---
 
@@ -127,10 +131,16 @@ function extractImageNamesFromContent(content: string): string[] {
 }
 
 /**
- * 게시글 목록 조회
+ * 게시글 목록 조회 (페이지네이션 지원)
  */
 export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '15');
+    const searchQuery = searchParams.get('search') || '';
+    const tag = searchParams.get('tag') || '';
+    
     const { readdir, readFile, stat } = await import('fs/promises');
     const matter = await import('gray-matter');
     
@@ -165,12 +175,52 @@ export async function GET(request: NextRequest) {
     );
 
     // null 값 제거 및 날짜순 정렬 (최신순)
-    const validPosts = posts.filter(Boolean) as unknown as Array<{ id: string; date: string; [key: string]: unknown }>;
+    let validPosts = posts.filter(Boolean) as unknown as Array<{ 
+      id: string; 
+      date: string; 
+      title: string;
+      content: string;
+      tags: string[];
+      [key: string]: unknown 
+    }>;
+    
     validPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    // 검색어 필터링
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      validPosts = validPosts.filter(post => {
+        const titleMatch = post.title.toLowerCase().includes(query);
+        const contentMatch = post.content.toLowerCase().includes(query);
+        const tagMatch = post.tags.some(tag => tag.toLowerCase().includes(query));
+        return titleMatch || contentMatch || tagMatch;
+      });
+    }
+
+    // 태그 필터링
+    if (tag.trim()) {
+      validPosts = validPosts.filter(post => 
+        post.tags.includes(tag)
+      );
+    }
+
+    // 페이지네이션
+    const totalPosts = validPosts.length;
+    const totalPages = Math.ceil(totalPosts / limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedPosts = validPosts.slice(startIndex, endIndex);
 
     return NextResponse.json({
       success: true,
-      posts: validPosts
+      posts: paginatedPosts,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalPosts,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
+      }
     });
 
   } catch (error) {

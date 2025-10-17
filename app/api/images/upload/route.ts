@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const postId = formData.get('postId') as string;
-    const isTemp = formData.get('isTemp') === 'true';
+    // const isTemp = formData.get('isTemp') === 'true'; // 현재 사용하지 않음
 
     if (!file || !postId) {
       return NextResponse.json({ error: 'Missing file or postId' }, { status: 400 });

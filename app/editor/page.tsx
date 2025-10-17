@@ -1,6 +1,9 @@
 'use client'
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
+
+// 에디터 컴포넌트들을 정적 import로 변경 (동적 import 문제 해결)
 import MarkdownEditor from '@/components/editor/MarkdownEditor';
 import EditorFooter from '@/components/editor/EditorFooter';
 import TagInput from '@/components/editor/TagInput';
@@ -9,6 +12,7 @@ import { darkModeAtom } from '@/atoms/blogAtoms';
 import { cn } from '@/lib/utils';
 import { generateTempPostId } from '@/lib/postId';
 import { usePageLeaveWarning } from '@/hooks/usePageLeaveWarning';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function EditorPage() {
   const [isDarkMode] = useAtom(darkModeAtom);
@@ -24,6 +28,7 @@ export default function EditorPage() {
     isDirty,
     message: '작성 중인 내용이 있습니다. 정말 나가시겠습니까?'
   });
+
 
   // 변경사항 추적
   useEffect(() => {
@@ -99,8 +104,9 @@ export default function EditorPage() {
   }, [confirmLeave, router]);
 
 
+
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
       {/* 제목 입력 */}
       <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
         <input 
@@ -124,7 +130,7 @@ export default function EditorPage() {
       </div>
 
       {/* 마크다운 에디터 - 남은 공간을 모두 사용 */}
-      <div className="flex-1">
+      <div className="flex-1 overflow-hidden">
         <MarkdownEditor 
           postId={tempPostId}
           isNewPost={true}

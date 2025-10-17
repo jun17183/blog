@@ -1,5 +1,5 @@
 'use client'
-import { useState, createContext, useContext, ReactNode, useEffect } from 'react';
+import { useState, createContext, useContext, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { useMarkdownEditor } from '@/hooks/useMarkdownEditor';
 import { useImageUpload } from '@/hooks/useImageUpload';
@@ -74,7 +74,7 @@ function MarkdownEditor({
 }
 
 // Toolbar 컴포넌트
-function Toolbar() {
+export function Toolbar() {
   const { insertText, postId, onImageAdded } = useMarkdownEditorContext();
   
   return (
@@ -87,7 +87,7 @@ function Toolbar() {
 }
 
 // Input 컴포넌트
-function Input() {
+export function Input() {
   const { 
     content, 
     setContent, 
@@ -108,7 +108,7 @@ function Input() {
 }
 
 // Preview 컴포넌트
-function Preview() {
+export function Preview() {
   const { content, previewRef, showPreview } = useMarkdownEditorContext();
 
   if (!showPreview) return null;
@@ -121,25 +121,31 @@ function Preview() {
 }
 
 // Editor 영역 (Input + Preview)
-function Editor() {
+export function Editor() {
   const { showPreview } = useMarkdownEditorContext();
 
   return (
-      <div className={cn(
-        'flex-1 grid mb-20',
-        {
-          'grid-cols-1 lg:grid-cols-2': showPreview,
-          'grid-cols-1': !showPreview,
-        }
-      )}>
-        {/* 마크다운 입력 영역 */}
-        <div className="flex flex-col h-full">
-        <Toolbar />
-        <Input />
+    <div className={cn(
+      'flex-1 grid h-full',
+      {
+        'grid-cols-1 lg:grid-cols-2': showPreview,
+        'grid-cols-1': !showPreview,
+      }
+    )}>
+      {/* 마크다운 입력 영역 */}
+      <div className="flex flex-col h-full overflow-hidden">
+        <div className="flex-shrink-0">
+          <Toolbar />
         </div>
+        <div className="flex-1 overflow-y-auto">
+          <Input />
+        </div>
+      </div>
 
-        {/* 미리보기 영역 */}
-      <Preview />
+      {/* 미리보기 영역 */}
+      <div className="h-full overflow-y-auto">
+        <Preview />
+      </div>
     </div>
   );
 }

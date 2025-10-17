@@ -64,7 +64,7 @@ export default function MarkdownPreview({ content, previewRef }: MarkdownPreview
   return (
     <div 
       ref={previewRef}
-      className={`flex-1 p-6 overflow-y-auto ${
+      className={`flex-1 p-6 ${
         isDarkMode 
           ? 'bg-gray-900' 
           : 'bg-white'

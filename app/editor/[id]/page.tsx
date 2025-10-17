@@ -1,6 +1,9 @@
 'use client'
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
+
+// 에디터 컴포넌트들을 정적 import로 변경 (동적 import 문제 해결)
 import MarkdownEditor from '@/components/editor/MarkdownEditor';
 import EditorFooter from '@/components/editor/EditorFooter';
 import TagInput from '@/components/editor/TagInput';
@@ -8,23 +11,14 @@ import { useAtom } from 'jotai';
 import { darkModeAtom } from '@/atoms/blogAtoms';
 import { cn } from '@/lib/utils';
 import { usePageLeaveWarning } from '@/hooks/usePageLeaveWarning';
-
-interface Post {
-  id: string;
-  title: string;
-  content: string;
-  tags: string[];
-  excerpt: string;
-  date: string;
-  updated?: string;
-}
+import { Post } from '@/types/blog';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function EditPostPage() {
   const [isDarkMode] = useAtom(darkModeAtom);
   const [title, setTitle] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [content, setContent] = useState('');
-  const [excerpt, setExcerpt] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
@@ -39,6 +33,7 @@ export default function EditPostPage() {
     message: '수정 중인 내용이 있습니다. 정말 나가시겠습니까?'
   });
 
+
   // 게시글 데이터 로드
   useEffect(() => {
     const loadPost = async () => {
@@ -51,7 +46,6 @@ export default function EditPostPage() {
           setTitle(post.title);
           setTags(post.tags || []);
           setContent(post.content);
-          setExcerpt(post.excerpt || '');
         } else {
           alert('게시글을 불러올 수 없습니다.');
           router.push('/blog');
@@ -73,7 +67,7 @@ export default function EditPostPage() {
   // 변경사항 추적
   useEffect(() => {
     setIsDirty(true);
-  }, [title, tags, content, excerpt]);
+  }, [title, tags, content]);
 
   const handlePublish = useCallback(async () => {
     if (!title.trim()) {
@@ -110,7 +104,6 @@ export default function EditPostPage() {
           title: title.trim(),
           tags,
           content: editorContent.trim(),
-          excerpt: excerpt.trim(),
         }),
       });
 
@@ -129,7 +122,7 @@ export default function EditPostPage() {
     } finally {
       setSaving(false);
     }
-  }, [title, tags, excerpt, postId, router]);
+  }, [title, tags, postId, router]);
 
   const handleCancel = useCallback(() => {
     confirmLeave(() => {
@@ -146,16 +139,13 @@ export default function EditPostPage() {
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">게시글을 불러오는 중...</p>
-        </div>
+        <LoadingSpinner size="lg" text="게시글을 불러오는 중..." />
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
       {/* 제목 입력 */}
       <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-700">
         <input 
@@ -172,21 +162,6 @@ export default function EditPostPage() {
           )}
         />
         
-        {/* 요약 입력 */}
-        <input 
-          type="text" 
-          value={excerpt}
-          onChange={(e) => setExcerpt(e.target.value)}
-          placeholder="게시글 요약을 입력하세요 (선택사항)"
-          className={cn(
-            'w-full px-0 py-2 text-sm border-none outline-none bg-transparent mt-2',
-            {
-              'text-gray-300 placeholder-gray-500': isDarkMode,
-              'text-gray-600 placeholder-gray-400': !isDarkMode,
-            }
-          )}
-        />
-        
         <TagInput
           tags={tags}
           onTagsChange={setTags}
@@ -195,7 +170,7 @@ export default function EditPostPage() {
       </div>
 
       {/* 마크다운 에디터 */}
-      <div className="flex-1">
+      <div className="flex-1 overflow-hidden">
         <MarkdownEditor 
           initialContent={content}
           postId={postId}

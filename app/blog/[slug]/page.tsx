@@ -2,27 +2,43 @@
 import { useEffect, use, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkBreaks from 'remark-breaks';
-import rehypeHighlight from 'rehype-highlight';
-import rehypeRaw from 'rehype-raw';
+import dynamic from 'next/dynamic';
+
+// ReactMarkdown을 동적 import로 로딩 최적화
+const ReactMarkdown = dynamic(() => import('react-markdown'), {
+  loading: () => <LoadingSpinner size="lg" text="게시글을 불러오는 중..." />
+});
 import { useAtom } from 'jotai';
 import { darkModeAtom, authAtom } from '@/atoms/blogAtoms';
 import { useSession } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import { Edit, Trash2, ArrowLeft } from 'lucide-react';
-
-interface Post {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  date: string;
-  updated?: string;
-  tags: string[];
-  content: string;
-}
+import { Post } from '@/types/blog';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { ImageComponent } from '@/components/editor/preview/ImageComponent';
+import { CodeComponent } from '@/components/editor/preview/CodeComponent';
+import { TableComponent, ThComponent, TdComponent } from '@/components/editor/preview/TableComponents';
+import { 
+  BlockquoteComponent, 
+  LinkComponent, 
+  ParagraphComponent, 
+  StrongComponent, 
+  EmComponent, 
+  DelComponent 
+} from '@/components/editor/preview/TextComponents';
+import { 
+  H1Component, 
+  H2Component, 
+  H3Component, 
+  H4Component, 
+  H5Component, 
+  H6Component 
+} from '@/components/editor/preview/HeadingComponents';
+import { UlComponent, OlComponent, LiComponent } from '@/components/editor/preview/ListComponents';
+import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
+import rehypeHighlight from 'rehype-highlight';
+import rehypeRaw from 'rehype-raw';
 
 export default function BlogDetailPage({ 
   params 
@@ -54,10 +70,15 @@ export default function BlogDetailPage({
         const result = await response.json();
 
         if (result.success) {
-          const foundPost = result.posts.find((p: Post) => p.slug === slug);
+          // URL에서 받은 slug를 디코딩하여 비교
+          const decodedSlug = decodeURIComponent(slug);
+          const foundPost = result.posts.find((p: Post) => p.slug === decodedSlug);
+          
           if (foundPost) {
             setPost(foundPost);
           } else {
+            console.log('Looking for slug:', decodedSlug);
+            console.log('Available slugs:', result.posts.map((p: Post) => p.slug));
             setError('게시글을 찾을 수 없습니다.');
           }
         } else {
@@ -129,12 +150,12 @@ export default function BlogDetailPage({
   }
   
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 pt-2 pb-8">
       {/* 뒤로가기 버튼 */}
       <button
         onClick={() => router.back()}
         className={cn(
-          'flex items-center gap-2 mb-6 px-3 py-2 rounded-lg transition-colors',
+          'flex items-center gap-2 mb-4 px-3 py-2 rounded-lg transition-colors cursor-pointer',
           {
             'text-gray-300 hover:bg-gray-800': isDarkMode,
             'text-gray-600 hover:bg-gray-100': !isDarkMode,
@@ -157,39 +178,39 @@ export default function BlogDetailPage({
             {post.title}
           </h1>
           
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center space-x-4">
-              <span className={cn(
-                'text-sm',
-                {
-                  'text-gray-400': isDarkMode,
-                  'text-gray-500': !isDarkMode,
-                }
-              )}>
-                {post.date}
-                {post.updated && post.updated !== post.date && (
-                  <span className="ml-2 text-xs opacity-75">
-                    (수정: {post.updated})
-                  </span>
-                )}
-              </span>
-              
-              <div className="flex gap-2">
-                {post.tags.map((tag, index) => (
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-3">
+            <div className="flex flex-wrap gap-2">
+              {post.tags.slice(0, 4).map((tag, index) => {
+                // 긴 태그 처리 (최대 15자)
+                const displayTag = tag.length > 15 ? tag.substring(0, 15) + '...' : tag;
+                
+                return (
                   <span
                     key={index}
                     className={cn(
-                      'px-2 py-1 rounded text-xs font-medium',
+                      'px-2 py-1 rounded text-xs font-medium max-w-[120px] truncate',
                       {
                         'bg-gray-700 text-gray-300': isDarkMode,
                         'bg-gray-100 text-gray-600': !isDarkMode,
                       }
                     )}
+                    title={tag} // 전체 태그명을 툴팁으로 표시
                   >
-                    #{tag}
+                    #{displayTag}
                   </span>
-                ))}
-              </div>
+                );
+              })}
+              {post.tags.length > 4 && (
+                <span className={cn(
+                  'text-xs px-2 py-1',
+                  {
+                    'text-gray-400': isDarkMode,
+                    'text-gray-500': !isDarkMode,
+                  }
+                )}>
+                  +{post.tags.length - 4}
+                </span>
+              )}
             </div>
 
             {/* 관리자 액션 버튼들 */}
@@ -212,7 +233,7 @@ export default function BlogDetailPage({
                 <button
                   onClick={handleDeletePost}
                   className={cn(
-                    'flex items-center gap-2 px-3 py-2 rounded-lg transition-colors',
+                    'flex items-center gap-2 px-3 py-2 rounded-lg transition-colors cursor-pointer',
                     {
                       'text-gray-400 hover:text-red-400 hover:bg-gray-800': isDarkMode,
                       'text-gray-500 hover:text-red-600 hover:bg-gray-100': !isDarkMode,
@@ -228,7 +249,7 @@ export default function BlogDetailPage({
         </header>
         
         <div className={cn(
-          'prose prose-lg max-w-none',
+          'prose prose-lg max-w-none break-words',
           {
             'prose-invert prose-headings:text-white prose-p:text-gray-300 prose-strong:text-white prose-code:text-gray-300 prose-pre:bg-gray-800 prose-blockquote:text-gray-400 prose-ul:text-gray-300 prose-ol:text-gray-300 prose-li:text-gray-300': isDarkMode,
             'prose-gray prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900 prose-code:text-gray-800 prose-pre:bg-gray-100 prose-blockquote:text-gray-600 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700': !isDarkMode,
@@ -237,6 +258,28 @@ export default function BlogDetailPage({
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkBreaks]}
             rehypePlugins={[rehypeHighlight, rehypeRaw]}
+            components={{
+              code: CodeComponent,
+              table: TableComponent,
+              th: ThComponent,
+              td: TdComponent,
+              blockquote: BlockquoteComponent,
+              a: LinkComponent,
+              h1: H1Component,
+              h2: H2Component,
+              h3: H3Component,
+              h4: H4Component,
+              h5: H5Component,
+              h6: H6Component,
+              p: ParagraphComponent,
+              ul: UlComponent,
+              ol: OlComponent,
+              li: LiComponent,
+              strong: StrongComponent,
+              em: EmComponent,
+              del: DelComponent,
+              img: ImageComponent,
+            }}
           >
             {post.content}
           </ReactMarkdown>

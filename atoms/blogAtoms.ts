@@ -46,8 +46,8 @@ export const showTagsAtom = atom(false);
 // 검색 쿼리
 export const searchQueryAtom = atom('');
 
-// 선택된 태그들
-export const selectedTagsAtom = atom<string[]>([]);
+// 선택된 태그 (단일 선택)
+export const selectedTagAtom = atom<string | null>(null);
 
 // 검색/태그 섹션 토글 액션
 export const toggleSearchAtom = atom(
@@ -85,6 +85,6 @@ export const resetFiltersAtom = atom(
   null,
   (get, set) => {
     set(searchQueryAtom, '');
-    set(selectedTagsAtom, []);
+    set(selectedTagAtom, null);
   }
 );

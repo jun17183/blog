@@ -1,4 +1,4 @@
-import { writeFile, mkdir, rm, readdir, rename } from 'fs/promises';
+import { mkdir, rm, readdir } from 'fs/promises';
 import { join } from 'path';
 
 const CONTENTS_DIR = join(process.cwd(), 'contents');
@@ -19,8 +19,8 @@ export async function deletePostImageDir(postId: string): Promise<void> {
   const dirPath = join(CONTENTS_DIR, postId);
   try {
     await rm(dirPath, { recursive: true, force: true });
-  } catch (error) {
-    console.error('Failed to delete post directory:', error);
+  } catch {
+    console.error('Failed to delete post directory');
   }
 }
 
@@ -34,7 +34,7 @@ export async function getPostImages(postId: string): Promise<string[]> {
     return files.filter(file => 
       file.match(/\.(jpg|jpeg|png|gif|webp)$/i)
     );
-  } catch (error) {
+  } catch {
     return [];
   }
 }

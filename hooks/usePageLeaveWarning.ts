@@ -39,18 +39,18 @@ export function usePageLeaveWarning({
 
   // Next.js 라우터 이동 시 경고
   useEffect(() => {
-    const handleRouteChangeStart = (url: string) => {
-      if (isDirty && !isNavigatingRef.current) {
-        const shouldLeave = window.confirm(message);
-        if (!shouldLeave) {
-          // 라우터 이벤트를 취소하는 방법이 없으므로
-          // 현재 페이지에 머물도록 처리
-          router.push(window.location.pathname);
-          throw new Error('Route change cancelled');
-        }
-        isNavigatingRef.current = true;
-      }
-    };
+    // const handleRouteChangeStart = () => {
+    //   if (isDirty && !isNavigatingRef.current) {
+    //     const shouldLeave = window.confirm(message);
+    //     if (!shouldLeave) {
+    //       // 라우터 이벤트를 취소하는 방법이 없으므로
+    //       // 현재 페이지에 머물도록 처리
+    //       router.push(window.location.pathname);
+    //       throw new Error('Route change cancelled');
+    //     }
+    //     isNavigatingRef.current = true;
+    //   }
+    // };
 
     // Next.js 13+ App Router에서는 router 이벤트가 제한적이므로
     // 대신 컴포넌트 레벨에서 처리

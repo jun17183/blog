@@ -15,7 +15,7 @@ export async function DELETE(request: NextRequest) {
     try {
       await rm(filePath, { force: true });
       return NextResponse.json({ success: true });
-    } catch (error) {
+    } catch {
       // 파일이 이미 삭제되었거나 존재하지 않는 경우
       return NextResponse.json({ success: true, message: 'File not found or already deleted' });
     }

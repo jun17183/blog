@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [auth, setAuth] = useAtom(authAtom);
+  const [, setAuth] = useAtom(authAtom);
   const [isLoading, setIsLoading] = useState(false);
 
   // 이미 로그인된 경우 블로그로 리다이렉트

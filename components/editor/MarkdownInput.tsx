@@ -20,7 +20,7 @@ export default function MarkdownInput({
   const [isDarkMode] = useAtom(darkModeAtom);
 
   return (
-    <div className="flex-1 relative" data-editor="markdown">
+    <div className="h-full relative" data-editor="markdown">
       <textarea
         ref={textareaRef}
         value={content}

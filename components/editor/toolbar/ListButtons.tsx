@@ -4,7 +4,6 @@ import {
   ListOrdered,
   Quote 
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useAtom } from 'jotai';
 import { darkModeAtom } from '@/atoms/blogAtoms';
 

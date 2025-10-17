@@ -9,11 +9,16 @@ const CONTENTS_DIR = join(process.cwd(), 'contents');
  * 고유한 slug 생성 (중복 방지)
  */
 async function generateUniqueSlug(title: string): Promise<string> {
-  // 기본 slug 생성
+  // 제목이 비어있거나 공백만 있는 경우 처리
+  if (!title || !title.trim()) {
+    return 'untitled';
+  }
+
+  // 기본 slug 생성 (한글, 영문, 숫자, 하이픈만 허용)
   let baseSlug = title
     .toLowerCase()
     .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
+    .replace(/[^a-z0-9가-힣-]/g, '')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
 
@@ -36,7 +41,7 @@ async function generateUniqueSlug(title: string): Promise<string> {
         if (frontmatter.slug) {
           existingSlugs.add(frontmatter.slug);
         }
-      } catch (error) {
+      } catch {
         // 파일 읽기 실패 시 무시
         continue;
       }
@@ -52,7 +57,7 @@ async function generateUniqueSlug(title: string): Promise<string> {
     }
 
     return slug;
-  } catch (error) {
+  } catch {
     // 디렉토리 읽기 실패 시 기본 slug 반환
     return baseSlug;
   }
@@ -97,7 +102,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const { content, title, tags, excerpt } = await request.json();
+    const { content, title, tags } = await request.json();
 
     if (!content || !title) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -120,9 +125,8 @@ export async function PUT(
 title: "${title}"
 slug: "${uniqueSlug}"
 date: "${existingFrontmatter.date}"  # 기존 날짜 유지
-updated: "${new Date().toISOString().split('T')[0]}"  # 수정일 추가
+updated: "${new Date().toISOString()}"  # 수정일 추가
 tags: ${JSON.stringify(tags || [])}
-excerpt: "${excerpt || ''}"
 published: true
 ---
 

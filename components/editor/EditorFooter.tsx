@@ -85,36 +85,39 @@ export default function EditorFooter({
             <span>나가기</span>
           </button>
 
-          {/* 중앙: 취소 버튼 (새 글 작성 시에만 표시) */}
-          {!isEdit && (
+          {/* 오른쪽: 취소 버튼과 출간 버튼 */}
+          <div className="flex items-center gap-3">
+            {/* 취소 버튼 (새 글 작성 시에만 표시) */}
+            {!isEdit && (
+              <button
+                onClick={handleCancel}
+                className={cn(
+                  'px-4 py-2 rounded-lg transition-colors cursor-pointer',
+                  {
+                    'text-gray-300 hover:bg-gray-800': isDarkMode,
+                    'text-gray-700 hover:bg-gray-50': !isDarkMode,
+                  }
+                )}
+              >
+                취소
+              </button>
+            )}
+
+            {/* 출간/수정 버튼 */}
             <button
-              onClick={handleCancel}
+              onClick={handlePublish}
+              disabled={saving}
               className={cn(
                 'px-4 py-2 rounded-lg transition-colors cursor-pointer',
                 {
-                  'text-gray-300 hover:bg-gray-800': isDarkMode,
-                  'text-gray-700 hover:bg-gray-50': !isDarkMode,
+                  'bg-blue-500 text-white hover:bg-blue-600': !saving,
+                  'bg-gray-400 text-gray-200 cursor-not-allowed': saving,
                 }
               )}
             >
-              취소
+              {saving ? '저장 중...' : (isEdit ? '수정하기' : '출간하기')}
             </button>
-          )}
-
-          {/* 오른쪽: 출간 버튼 */}
-          <button
-            onClick={handlePublish}
-            disabled={saving}
-            className={cn(
-              'px-4 py-2 rounded-lg transition-colors cursor-pointer',
-              {
-                'bg-blue-500 text-white hover:bg-blue-600': !saving,
-                'bg-gray-400 text-gray-200 cursor-not-allowed': saving,
-              }
-            )}
-          >
-            {saving ? '저장 중...' : (isEdit ? '수정하기' : '출간하기')}
-          </button>
+          </div>
         </div>
       </div>
     </div>
