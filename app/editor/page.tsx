@@ -1,7 +1,6 @@
 'use client'
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
 
 // 에디터 컴포넌트들을 정적 import로 변경 (동적 import 문제 해결)
 import MarkdownEditor from '@/components/editor/MarkdownEditor';
@@ -12,7 +11,6 @@ import { darkModeAtom } from '@/atoms/blogAtoms';
 import { cn } from '@/lib/utils';
 import { generateTempPostId } from '@/lib/postId';
 import { usePageLeaveWarning } from '@/hooks/usePageLeaveWarning';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function EditorPage() {
   const [isDarkMode] = useAtom(darkModeAtom);

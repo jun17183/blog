@@ -16,7 +16,7 @@ const handler = NextAuth({
         token.id = profile.sub;
         token.name = profile.name;
         token.email = profile.email;
-        token.picture = profile.picture;
+        token.picture = (profile as { picture?: string }).picture;
         
         // 관리자 권한 확인
         const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(email => email.trim()) || [];

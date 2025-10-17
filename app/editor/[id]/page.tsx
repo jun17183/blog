@@ -1,7 +1,6 @@
 'use client'
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
 
 // 에디터 컴포넌트들을 정적 import로 변경 (동적 import 문제 해결)
 import MarkdownEditor from '@/components/editor/MarkdownEditor';

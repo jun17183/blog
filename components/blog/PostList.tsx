@@ -1,10 +1,6 @@
-import Link from 'next/link';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { useAtom } from 'jotai';
-import { authAtom } from '@/atoms/blogAtoms';
-import { useSession } from 'next-auth/react';
-import { Edit, Trash2, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 
 interface Post {
   id: string;
@@ -20,7 +16,6 @@ interface Post {
 interface PostListProps {
   posts: Post[];
   isDarkMode: boolean;
-  onDeletePost?: (postId: string) => void;
 }
 
 // 기본 이미지 컴포넌트
@@ -63,10 +58,7 @@ function extractThumbnailFromContent(content: string): string | null {
   return match ? match[1] : null;
 }
 
-export default function PostList({ posts, isDarkMode, onDeletePost }: PostListProps) {
-  const [auth] = useAtom(authAtom);
-  const { data: session } = useSession();
-  const isAdmin = auth.isAdmin || session?.isAdmin;
+export default function PostList({ posts, isDarkMode }: PostListProps) {
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

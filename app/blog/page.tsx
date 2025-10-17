@@ -40,8 +40,7 @@ export default function BlogListPage() {
     loadingMore,
     error,
     pagination,
-    loadPosts,
-    handleDeletePost
+    loadPosts
   } = usePosts(selectedTag || undefined);
 
   // 무한 스크롤을 위한 ref
@@ -139,7 +138,6 @@ export default function BlogListPage() {
         <PostList
           posts={posts}
           isDarkMode={isDarkMode}
-          onDeletePost={handleDeletePost}
         />
 
         {/* 무한 스크롤 트리거 */}

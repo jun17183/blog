@@ -28,7 +28,7 @@ export default function MediaButtons({ onLink, onImageUpload }: MediaButtonsProp
         <Link size={16} />
       </button>
       <label className={toolbarButtonClass} title="이미지 업로드" aria-label="이미지 업로드">
-        <Image size={16} alt="이미지 업로드" />
+        <Image size={16} aria-hidden="true" />
         <input
           type="file"
           accept="image/*"
