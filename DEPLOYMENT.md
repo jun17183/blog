@@ -16,19 +16,35 @@ https://your-domain.vercel.app/api/auth/callback/google
 
 Vercel 대시보드에서 다음 환경 변수를 설정하세요:
 
-1. Vercel 프로젝트 대시보드로 이동
-2. **Settings** > **Environment Variables** 선택
-3. 다음 변수 추가:
+#### 단계별 설정 방법:
 
-| 변수명 | 값 | 설명 |
-|--------|-----|------|
-| `NEXTAUTH_URL` | `https://your-domain.vercel.app` | 배포된 도메인 주소 |
-| `NEXTAUTH_SECRET` | `.env.local`의 값 복사 | NextAuth 암호화 키 |
-| `GOOGLE_CLIENT_ID` | `.env.local`의 값 복사 | Google OAuth Client ID |
-| `GOOGLE_CLIENT_SECRET` | `.env.local`의 값 복사 | Google OAuth Client Secret |
-| `ADMIN_EMAILS` | `jun17183@gmail.com` | 관리자 이메일 |
+1. **Vercel 대시보드 접속**
+   - https://vercel.com 접속
+   - 로그인 후 해당 프로젝트 선택
 
-**중요**: 모든 환경 변수를 **Production**, **Preview**, **Development** 환경에 적용하세요.
+2. **프로젝트 설정 페이지로 이동**
+   - 프로젝트 대시보드에서 **Settings** 탭 클릭
+   - 왼쪽 메뉴에서 **Environment Variables** 클릭
+
+3. **환경 변수 추가**
+   - **Add New** 버튼 클릭
+   - 각 변수를 하나씩 추가:
+
+| 변수명 | 값 예시 | 설명 |
+|--------|---------|------|
+| `NEXTAUTH_URL` | `https://your-domain.vercel.app` | 배포된 도메인 주소 (실제 Vercel 도메인 사용) |
+| `NEXTAUTH_SECRET` | `랜덤 문자열` | NextAuth 암호화 키 (로컬 `.env.local`의 값 복사) |
+| `GOOGLE_CLIENT_ID` | `실제 Client ID` | Google OAuth Client ID (로컬 `.env.local`의 값 복사) |
+| `GOOGLE_CLIENT_SECRET` | `실제 Client Secret` | Google OAuth Client Secret (로컬 `.env.local`의 값 복사) |
+| `ADMIN_EMAILS` | `jun17183@gmail.com` | 관리자 이메일 (쉼표로 구분 가능) |
+
+4. **환경 선택**
+   - 각 변수 추가 시 **Production**, **Preview**, **Development** 모두 선택
+   - **Save** 클릭
+
+**중요**: 
+- 모든 환경 변수를 **Production**, **Preview**, **Development** 환경에 적용하세요
+- 환경 변수 추가 후 **재배포**가 필요합니다 (자동 재배포 또는 수동 재배포)
 
 ## 배포 방법
 
@@ -109,9 +125,18 @@ vercel env pull .env.local
 ## 참고사항
 
 - `.env.local` 파일은 Git에 커밋되지 않습니다
-- `.env.example` 파일을 참고하여 필요한 환경 변수 확인
 - Vercel은 자동으로 HTTPS를 제공합니다
 - 커스텀 도메인 사용 시 `NEXTAUTH_URL`을 커스텀 도메인으로 업데이트하세요
 - Vercel에서는 대시보드에서 환경 변수를 관리하며, 파일로 관리하지 않습니다
-- 로컬 개발 시: `.env.example`을 복사해서 `.env.local`로 만들고 실제 값 입력
+- 로컬 개발 시: `.env.local` 파일을 만들고 실제 값 입력 (아래 환경 변수 목록 참고)
 - Vercel CLI 사용 시: `vercel env pull .env.local`로 Vercel의 환경 변수를 로컬로 가져올 수 있습니다
+
+## 필요한 환경 변수 목록
+
+로컬 개발 시 `.env.local` 파일에 다음 변수들을 설정하세요:
+
+- `NEXTAUTH_URL`: `http://localhost:3000`
+- `NEXTAUTH_SECRET`: NextAuth 암호화 키 (생성: `openssl rand -base64 32`)
+- `GOOGLE_CLIENT_ID`: Google OAuth Client ID
+- `GOOGLE_CLIENT_SECRET`: Google OAuth Client Secret
+- `ADMIN_EMAILS`: 관리자 이메일 (쉼표로 구분)
