@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { rm } from 'fs/promises';
-import { join } from 'path';
+import { deleteImageFromPublic } from '@/lib/simpleImageStorage';
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -10,13 +9,11 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Missing postId or fileName' }, { status: 400 });
     }
 
-    const filePath = join(process.cwd(), 'contents', postId, 'images', fileName);
+    const success = await deleteImageFromPublic(postId, fileName);
     
-    try {
-      await rm(filePath, { force: true });
+    if (success) {
       return NextResponse.json({ success: true });
-    } catch {
-      // 파일이 이미 삭제되었거나 존재하지 않는 경우
+    } else {
       return NextResponse.json({ success: true, message: 'File not found or already deleted' });
     }
 

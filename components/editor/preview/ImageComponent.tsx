@@ -28,8 +28,8 @@ export const ImageComponent: Components['img'] = ({ src, alt, width, height, ...
     );
   }
   
-  // 로컬 API 이미지인 경우 unoptimized 처리
-  const isLocalImage = src.startsWith('/api/images/');
+  // public 폴더의 이미지는 직접 접근 가능하므로 unoptimized 처리
+  const isPublicImage = src.startsWith('/images/');
   
   return (
     <Image 
@@ -37,7 +37,7 @@ export const ImageComponent: Components['img'] = ({ src, alt, width, height, ...
       alt={alt || ''} 
       width={800}
       height={600}
-      unoptimized={isLocalImage}
+      unoptimized={isPublicImage}
       className={`max-w-full h-auto rounded-lg ${
         isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
       }`}

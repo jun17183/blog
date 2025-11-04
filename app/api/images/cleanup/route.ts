@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { deleteSpecificImages, deletePostImageDir } from '@/lib/imageUtils';
+import { deletePostImagesFromPublic, deleteImageFromPublic } from '@/lib/simpleImageStorage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,17 +11,20 @@ export async function POST(request: NextRequest) {
 
     if (isNewPost) {
       // 새 글 작성 취소: 전체 폴더 삭제
-      await deletePostImageDir(postId);
+      await deletePostImagesFromPublic(postId);
     } else {
       // 글 수정 취소: 새로 추가된 이미지만 삭제
       if (imageNames && imageNames.length > 0) {
-        await deleteSpecificImages(postId, imageNames);
+        const deletePromises = imageNames.map((fileName: string) => 
+          deleteImageFromPublic(postId, fileName)
+        );
+        await Promise.all(deletePromises);
       }
     }
 
     return NextResponse.json({ 
       success: true, 
-      message: isNewPost ? 'Post directory deleted' : 'New images cleaned up' 
+      message: isNewPost ? 'Post images deleted' : 'New images cleaned up' 
     });
 
   } catch (error) {
