@@ -111,7 +111,13 @@ ${content}`;
 
   } catch (error) {
     console.error('Post creation error:', error);
-    return NextResponse.json({ error: 'Failed to create post' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('Error details:', { errorMessage, errorStack, CONTENTS_DIR });
+    return NextResponse.json({ 
+      error: 'Failed to create post',
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+    }, { status: 500 });
   }
 }
 

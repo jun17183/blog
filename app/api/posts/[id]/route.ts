@@ -100,8 +100,10 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  let id: string | undefined;
   try {
-    const { id } = await params;
+    const resolvedParams = await params;
+    id = resolvedParams.id;
     const { content, title, tags } = await request.json();
 
     if (!content || !title) {
@@ -145,7 +147,13 @@ ${content}`;
 
   } catch (error) {
     console.error('Post update error:', error);
-    return NextResponse.json({ error: 'Failed to update post' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('Error details:', { errorMessage, errorStack, CONTENTS_DIR, id });
+    return NextResponse.json({ 
+      error: 'Failed to update post',
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+    }, { status: 500 });
   }
 }
 
@@ -156,8 +164,10 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  let id: string | undefined;
   try {
-    const { id } = await params;
+    const resolvedParams = await params;
+    id = resolvedParams.id;
     const postDir = join(CONTENTS_DIR, id);
     
     // 전체 게시글 폴더 삭제 (마크다운 파일 + 이미지들)
@@ -170,7 +180,13 @@ export async function DELETE(
 
   } catch (error) {
     console.error('Post delete error:', error);
-    return NextResponse.json({ error: 'Failed to delete post' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('Error details:', { errorMessage, errorStack, CONTENTS_DIR, id });
+    return NextResponse.json({ 
+      error: 'Failed to delete post',
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+    }, { status: 500 });
   }
 }
 
