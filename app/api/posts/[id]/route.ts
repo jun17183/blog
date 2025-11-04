@@ -166,12 +166,19 @@ ${content}`;
                               errorMessage.includes('EACCES') ||
                               errorMessage.includes('EROFS');
     
+    // 에러 메시지 생성 (항상 반환)
+    let userErrorMessage = '게시글 수정에 실패했습니다.';
+    
+    if (isFileSystemError) {
+      userErrorMessage = 'Vercel 환경에서는 파일 시스템에 직접 저장할 수 없습니다. 데이터베이스나 Vercel KV/Postgres를 사용해야 합니다.';
+    } else {
+      userErrorMessage = `게시글 수정 실패: ${errorMessage}`;
+    }
+    
     return NextResponse.json({ 
       success: false,
-      error: isFileSystemError 
-        ? 'Vercel 환경에서는 파일 시스템에 직접 저장할 수 없습니다. 데이터베이스나 Vercel KV/Postgres를 사용해야 합니다.'
-        : `Failed to update post: ${errorMessage}`,
-      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+      error: userErrorMessage,
+      details: errorMessage, // 항상 details에도 전체 에러 메시지 포함
       errorCode
     }, { status: 500 });
   }

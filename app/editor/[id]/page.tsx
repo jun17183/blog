@@ -106,20 +106,14 @@ export default function EditPostPage() {
         }),
       });
 
+      // 응답을 먼저 파싱
+      const result = await response.json();
+
       // 응답 상태 확인
       if (!response.ok) {
-        let errorMessage = '게시글 수정에 실패했습니다.';
-        try {
-          const errorResult = await response.json();
-          errorMessage = errorResult.error || errorResult.details || errorMessage;
-        } catch {
-          // JSON 파싱 실패 시 기본 메시지 사용
-          errorMessage = `서버 오류 (${response.status}): ${response.statusText}`;
-        }
+        const errorMessage = result.error || result.details || `서버 오류 (${response.status}): ${response.statusText}`;
         throw new Error(errorMessage);
       }
-
-      const result = await response.json();
 
       if (result.success) {
         alert('게시글이 성공적으로 수정되었습니다.');
