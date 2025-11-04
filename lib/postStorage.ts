@@ -26,6 +26,7 @@ export async function savePost(
         await put(blobPath, content, {
           access: 'public',
           addRandomSuffix: false,
+          allowOverwrite: true, // 기존 Blob 덮어쓰기 허용 (게시글 수정용)
           token: process.env.BLOB_READ_WRITE_TOKEN,
         });
 
