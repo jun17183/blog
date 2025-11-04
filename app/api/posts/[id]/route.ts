@@ -178,13 +178,14 @@ export async function DELETE(
  * 마크다운 콘텐츠에서 사용된 이미지 파일명 추출
  */
 function extractImageNamesFromContent(content: string): string[] {
-  const imageRegex = /!\[.*?\]\(\/contents\/[^\/]+\/images\/([^\)]+)\)/g;
+  // /api/images/[postId]/[fileName] 또는 /images/[postId]/[fileName] 형식 모두 지원
+  const imageRegex = /!\[.*?\]\((?:\/api\/images\/[^\/]+\/|\/images\/[^\/]+\/)([^\)]+)\)/g;
   const imageNames: string[] = [];
   let match;
-  
+
   while ((match = imageRegex.exec(content)) !== null) {
     imageNames.push(match[1]);
   }
-  
+
   return imageNames;
 }

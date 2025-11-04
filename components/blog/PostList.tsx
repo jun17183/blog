@@ -127,19 +127,25 @@ export default function PostList({ posts, isDarkMode }: PostListProps) {
                   // excerpt가 있으면 사용, 없으면 content에서 추출
                   let rawText = post.excerpt || post.content.replace(/^---[\s\S]*?---\n/, '');
                   
-                  // 마크다운 문법 제거
+                  // 마크다운 문법 제거 (순서 중요: 복잡한 것부터 처리)
                   rawText = rawText
+                    // 코드 블록 제거 먼저 (```code```)
+                    .replace(/```[\s\S]*?```/g, '')
+                    // 이미지 제거 - 모든 형식 처리
+                    // 1. 표준 형식: ![alt](url)
+                    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '')
+                    // 2. URL 없는 형식: !이미지명.jpg 또는 ![alt]
+                    .replace(/!\[([^\]]*)\]/g, '')
+                    .replace(/![^\s\n]+/g, '')
+                    // 3. 공백이 있는 경우도 처리
+                    .replace(/!\s*\[([^\]]*)\]\s*\([^)]+\)/g, '')
+                    // 링크 제거 ([text](url))
+                    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
                     // 헤딩 제거 (# ## ###)
                     .replace(/^#{1,6}\s+/gm, '')
                     // 볼드/이탤릭 제거 (**text** *text*)
                     .replace(/\*\*([^*]+)\*\*/g, '$1')
                     .replace(/\*([^*]+)\*/g, '$1')
-                    // 링크 제거 ([text](url))
-                    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-                    // 이미지 제거 (![alt](url))
-                    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '')
-                    // 코드 블록 제거 (```code```)
-                    .replace(/```[\s\S]*?```/g, '')
                     // 인라인 코드 제거 (`code`)
                     .replace(/`([^`]+)`/g, '$1')
                     // 리스트 제거 (- * +)

@@ -28,8 +28,8 @@ export const ImageComponent: Components['img'] = ({ src, alt, width, height, ...
     );
   }
   
-  // public 폴더의 이미지는 직접 접근 가능하므로 unoptimized 처리
-  const isPublicImage = src.startsWith('/images/');
+  // API를 통해 서빙되는 이미지는 unoptimized 처리
+  const isPublicImage = src.startsWith('/api/images/') || src.startsWith('/images/');
   
   return (
     <Image 
