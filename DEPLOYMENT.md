@@ -37,6 +37,9 @@ Vercel 대시보드에서 다음 환경 변수를 설정하세요:
 | `GOOGLE_CLIENT_ID` | `실제 Client ID` | Google OAuth Client ID (로컬 `.env.local`의 값 복사) |
 | `GOOGLE_CLIENT_SECRET` | `실제 Client Secret` | Google OAuth Client Secret (로컬 `.env.local`의 값 복사) |
 | `ADMIN_EMAILS` | `jun17183@gmail.com` | 관리자 이메일 (쉼표로 구분 가능) |
+| `BLOB_READ_WRITE_TOKEN` | (자동 생성) | Vercel Blob Storage 토큰 (Vercel 대시보드에서 자동 생성) |
+
+**참고**: `BLOB_READ_WRITE_TOKEN`은 Vercel이 자동으로 생성하므로 수동으로 설정할 필요가 없습니다. 하지만 이미지 업로드가 작동하지 않으면 Vercel 대시보드의 **Storage** > **Blob**에서 확인하세요.
 
 4. **환경 선택**
    - 각 변수 추가 시 **Production**, **Preview**, **Development** 모두 선택

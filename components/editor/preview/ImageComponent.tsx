@@ -32,7 +32,8 @@ export const ImageComponent: Components['img'] = ({ src, alt, width, height, ...
     );
   }
   
-  // API를 통해 서빙되는 이미지는 unoptimized 처리
+  // Vercel Blob Storage URL 또는 API를 통해 서빙되는 이미지는 unoptimized 처리
+  const isBlobUrl = src.startsWith('https://') && src.includes('blob.vercel-storage.com');
   const isPublicImage = src.startsWith('/api/images/') || src.startsWith('/images/');
   
   return (
@@ -41,7 +42,7 @@ export const ImageComponent: Components['img'] = ({ src, alt, width, height, ...
       alt={alt || ''} 
       width={imageWidth}
       height={imageHeight}
-      unoptimized={isPublicImage}
+      unoptimized={isPublicImage || isBlobUrl}
       className={`max-w-full h-auto rounded-lg ${
         isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
       }`}
