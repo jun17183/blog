@@ -142,8 +142,27 @@ export async function GET(request: NextRequest) {
     const searchQuery = searchParams.get('search') || '';
     const tag = searchParams.get('tag') || '';
     
-    const { readdir, readFile, stat } = await import('fs/promises');
+    const { readdir, readFile, stat, access } = await import('fs/promises');
+    const { constants } = await import('fs');
     const matter = await import('gray-matter');
+    
+    // contents 디렉토리 존재 확인
+    try {
+      await access(CONTENTS_DIR, constants.F_OK);
+    } catch {
+      // 디렉토리가 없으면 빈 배열 반환
+      return NextResponse.json({
+        success: true,
+        posts: [],
+        pagination: {
+          currentPage: page,
+          totalPages: 0,
+          totalPosts: 0,
+          hasNextPage: false,
+          hasPrevPage: false
+        }
+      });
+    }
     
     const files = await readdir(CONTENTS_DIR);
     const postDirs = await Promise.all(
@@ -226,6 +245,12 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Posts fetch error:', error);
-    return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('Error details:', { errorMessage, errorStack, CONTENTS_DIR });
+    return NextResponse.json({ 
+      error: 'Failed to fetch posts',
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+    }, { status: 500 });
   }
 }
