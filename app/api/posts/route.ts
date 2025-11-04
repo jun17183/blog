@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir, readdir, readFile } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { generatePostId } from '@/lib/postId';
 import { cleanupUnusedImages } from '@/lib/imageUtils';
+import { savePost, listPosts } from '@/lib/postStorage';
 
 const CONTENTS_DIR = join(process.cwd(), 'contents');
 
@@ -29,16 +30,17 @@ async function generateUniqueSlug(title: string): Promise<string> {
 
   // 기존 게시글들의 slug 확인
   try {
-    const files = await readdir(CONTENTS_DIR);
-    const existingSlugs = new Set<string>();
+    const listResult = await listPosts();
+    if (!listResult.success || !listResult.posts) {
+      return baseSlug;
+    }
 
-    for (const file of files) {
+    const existingSlugs = new Set<string>();
+    const matter = await import('gray-matter');
+
+    for (const post of listResult.posts) {
       try {
-        const filePath = join(CONTENTS_DIR, file, 'post.md');
-        const content = await readFile(filePath, 'utf-8');
-        const matter = await import('gray-matter');
-        const { data: frontmatter } = matter.default(content);
-        
+        const { data: frontmatter } = matter.default(post.content);
         if (frontmatter.slug) {
           existingSlugs.add(frontmatter.slug);
         }
@@ -81,10 +83,6 @@ export async function POST(request: NextRequest) {
     // 고유한 slug 생성
     const uniqueSlug = await generateUniqueSlug(title);
     
-    // 게시글 폴더 생성
-    const postDir = join(CONTENTS_DIR, finalPostId);
-    await mkdir(postDir, { recursive: true });
-
     // 마크다운 파일 생성
     const frontmatter = `---
 title: "${title}"
@@ -96,8 +94,19 @@ published: true
 
 ${content}`;
 
-    const filePath = join(postDir, 'post.md');
-    await writeFile(filePath, frontmatter, 'utf-8');
+    // 게시글 저장 (Vercel에서는 Blob Storage, 로컬에서는 파일 시스템)
+    const saveResult = await savePost(finalPostId, frontmatter);
+    if (!saveResult.success) {
+      throw new Error(saveResult.error || 'Failed to save post');
+    }
+
+    // 로컬 환경에서는 디렉토리 구조도 유지 (이미지 저장을 위해)
+    if (!process.env.VERCEL) {
+      const postDir = join(CONTENTS_DIR, finalPostId);
+      await mkdir(postDir, { recursive: true });
+      const filePath = join(postDir, 'post.md');
+      await writeFile(filePath, frontmatter, 'utf-8');
+    }
 
     // 사용하지 않는 이미지들 정리
     const usedImageNames = extractImageNamesFromContent(content);
@@ -174,15 +183,11 @@ export async function GET(request: NextRequest) {
     const searchQuery = searchParams.get('search') || '';
     const tag = searchParams.get('tag') || '';
     
-    const { readdir, readFile, stat, access } = await import('fs/promises');
-    const { constants } = await import('fs');
     const matter = await import('gray-matter');
     
-    // contents 디렉토리 존재 확인
-    try {
-      await access(CONTENTS_DIR, constants.F_OK);
-    } catch {
-      // 디렉토리가 없으면 빈 배열 반환
+    // 게시글 목록 가져오기 (Vercel에서는 Blob Storage, 로컬에서는 파일 시스템)
+    const listResult = await listPosts();
+    if (!listResult.success || !listResult.posts) {
       return NextResponse.json({
         success: true,
         posts: [],
@@ -196,35 +201,19 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    const files = await readdir(CONTENTS_DIR);
-    const postDirs = await Promise.all(
-      files.map(async (file) => {
-        const filePath = join(CONTENTS_DIR, file);
-        const stats = await stat(filePath);
-        return stats.isDirectory() ? file : null;
-      })
-    );
-    
-    const validPostDirs = postDirs.filter(Boolean);
-    
-    const posts = await Promise.all(
-      validPostDirs.map(async (postId) => {
-        const filePath = join(CONTENTS_DIR, postId!, 'post.md');
-        try {
-          const content = await readFile(filePath, 'utf-8');
-          const { data: frontmatter } = matter.default(content);
-          
-          return {
-            id: postId,
-            ...frontmatter,
-            content: content.replace(/^---[\s\S]*?---\n/, ''), // frontmatter 제거
-          };
-        } catch (error) {
-          console.error(`Failed to read post ${postId}:`, error);
-          return null;
-        }
-      })
-    );
+    const posts = listResult.posts.map(({ id, content }) => {
+      try {
+        const { data: frontmatter } = matter.default(content);
+        return {
+          id,
+          ...frontmatter,
+          content: content.replace(/^---[\s\S]*?---\n/, ''), // frontmatter 제거
+        };
+      } catch (error) {
+        console.error(`Failed to parse post ${id}:`, error);
+        return null;
+      }
+    });
 
     // null 값 제거 및 날짜순 정렬 (최신순)
     let validPosts = posts.filter(Boolean) as unknown as Array<{ 

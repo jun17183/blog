@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readFile, writeFile, rm, readdir } from 'fs/promises';
 import { join } from 'path';
 import { cleanupUnusedImages } from '@/lib/imageUtils';
+import { savePost, readPost, deletePost } from '@/lib/postStorage';
 
 const CONTENTS_DIR = join(process.cwd(), 'contents');
 
@@ -72,11 +73,15 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const filePath = join(CONTENTS_DIR, id, 'post.md');
     
-    const content = await readFile(filePath, 'utf-8');
+    // 게시글 읽기 (Vercel에서는 Blob Storage, 로컬에서는 파일 시스템)
+    const readResult = await readPost(id);
+    if (!readResult.success || !readResult.content) {
+      return NextResponse.json({ error: readResult.error || 'Post not found' }, { status: 404 });
+    }
+
     const matter = await import('gray-matter');
-    const { data: frontmatter, content: markdownContent } = matter.default(content);
+    const { data: frontmatter, content: markdownContent } = matter.default(readResult.content);
     
     return NextResponse.json({
       success: true,
@@ -110,12 +115,14 @@ export async function PUT(
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const filePath = join(CONTENTS_DIR, id, 'post.md');
-    
     // 기존 파일 읽기
-    const existingContent = await readFile(filePath, 'utf-8');
+    const readResult = await readPost(id);
+    if (!readResult.success || !readResult.content) {
+      throw new Error(readResult.error || 'Post not found');
+    }
+
     const matter = await import('gray-matter');
-    const { data: existingFrontmatter } = matter.default(existingContent);
+    const { data: existingFrontmatter } = matter.default(readResult.content);
 
     // 고유한 slug 생성 (제목이 변경된 경우에만)
     const uniqueSlug = title !== existingFrontmatter.title 
@@ -134,7 +141,17 @@ published: true
 
 ${content}`;
 
-    await writeFile(filePath, newFrontmatter, 'utf-8');
+    // 게시글 저장 (Vercel에서는 Blob Storage, 로컬에서는 파일 시스템)
+    const saveResult = await savePost(id, newFrontmatter);
+    if (!saveResult.success) {
+      throw new Error(saveResult.error || 'Failed to save post');
+    }
+
+    // 로컬 환경에서는 디렉토리 구조도 유지 (이미지 저장을 위해)
+    if (!process.env.VERCEL) {
+      const filePath = join(CONTENTS_DIR, id, 'post.md');
+      await writeFile(filePath, newFrontmatter, 'utf-8');
+    }
 
     // 사용하지 않는 이미지들 정리
     const usedImageNames = extractImageNamesFromContent(content);
@@ -195,10 +212,18 @@ export async function DELETE(
   try {
     const resolvedParams = await params;
     id = resolvedParams.id;
-    const postDir = join(CONTENTS_DIR, id);
     
-    // 전체 게시글 폴더 삭제 (마크다운 파일 + 이미지들)
-    await rm(postDir, { recursive: true, force: true });
+    // 게시글 삭제 (Vercel에서는 Blob Storage, 로컬에서는 파일 시스템)
+    const deleteResult = await deletePost(id);
+    if (!deleteResult.success) {
+      throw new Error(deleteResult.error || 'Failed to delete post');
+    }
+
+    // 로컬 환경에서는 디렉토리 구조도 삭제
+    if (!process.env.VERCEL) {
+      const postDir = join(CONTENTS_DIR, id);
+      await rm(postDir, { recursive: true, force: true });
+    }
 
     return NextResponse.json({
       success: true,
