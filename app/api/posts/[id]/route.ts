@@ -144,7 +144,16 @@ ${content}`;
     // 게시글 저장 (Vercel에서는 Blob Storage, 로컬에서는 파일 시스템)
     const saveResult = await savePost(id, newFrontmatter);
     if (!saveResult.success) {
+      console.error('Save post failed:', saveResult.error);
       throw new Error(saveResult.error || 'Failed to save post');
+    }
+
+    // 저장 후 바로 읽어서 확인 (디버깅용)
+    const verifyResult = await readPost(id);
+    if (!verifyResult.success || !verifyResult.content) {
+      console.warn('Warning: Post saved but could not be verified:', verifyResult.error);
+    } else {
+      console.log('Post saved and verified successfully');
     }
 
     // 로컬 환경에서는 디렉토리 구조도 유지 (이미지 저장을 위해)
@@ -159,7 +168,8 @@ ${content}`;
 
     return NextResponse.json({
       success: true,
-      message: 'Post updated successfully'
+      message: 'Post updated successfully',
+      postId: id
     });
 
   } catch (error) {

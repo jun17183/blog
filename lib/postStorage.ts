@@ -88,7 +88,11 @@ export async function readPost(postId: string): Promise<{ success: boolean; cont
           };
         }
 
-        const response = await fetch(postBlob.url);
+        // 캐시 무시를 위해 URL에 타임스탬프 추가
+        const cacheBuster = `?t=${Date.now()}`;
+        const response = await fetch(postBlob.url + cacheBuster, {
+          cache: 'no-store',
+        });
         const content = await response.text();
 
         return { success: true, content };
@@ -189,11 +193,15 @@ export async function listPosts(): Promise<{ success: boolean; posts?: Array<{ i
         // post.md 파일만 필터링
         const postBlobs = blobs.filter(blob => blob.pathname.endsWith('/post.md'));
         
-        // 각 게시글 읽기
+        // 각 게시글 읽기 (캐시 무시)
         const posts = await Promise.all(
           postBlobs.map(async (blob) => {
             try {
-              const response = await fetch(blob.url);
+              // 캐시 무시를 위해 URL에 타임스탬프 추가
+              const cacheBuster = `?t=${Date.now()}`;
+              const response = await fetch(blob.url + cacheBuster, {
+                cache: 'no-store',
+              });
               const content = await response.text();
               // postId 추출: posts/{postId}/post.md
               const match = blob.pathname.match(/posts\/([^\/]+)\/post\.md/);
