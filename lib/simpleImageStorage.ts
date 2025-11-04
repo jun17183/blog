@@ -23,21 +23,39 @@ export async function uploadImageToPublic(
 ): Promise<{ success: boolean; imageUrl?: string; markdownImage?: string; error?: string }> {
   try {
     // Vercel 환경에서는 Blob Storage 사용
+    // BLOB_READ_WRITE_TOKEN이 없으면 에러 발생하므로 체크
     if (process.env.VERCEL) {
-      const blobPath = `${postId}/${fileName}`;
-      const blob = await put(blobPath, file, {
-        access: 'public',
-        addRandomSuffix: false,
-      });
+      // Blob Storage 토큰이 없으면 에러 메시지 반환
+      if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        return {
+          success: false,
+          error: 'BLOB_READ_WRITE_TOKEN is not configured. Please set it in Vercel dashboard: Settings > Environment Variables'
+        };
+      }
 
-      const imageUrl = blob.url;
-      const markdownImage = `![${file.name}](${imageUrl})`;
+      try {
+        const blobPath = `${postId}/${fileName}`;
+        const blob = await put(blobPath, file, {
+          access: 'public',
+          addRandomSuffix: false,
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+        });
 
-      return {
-        success: true,
-        imageUrl,
-        markdownImage
-      };
+        const imageUrl = blob.url;
+        const markdownImage = `![${file.name}](${imageUrl})`;
+
+        return {
+          success: true,
+          imageUrl,
+          markdownImage
+        };
+      } catch (blobError) {
+        console.error('Blob Storage error:', blobError);
+        return {
+          success: false,
+          error: `Blob Storage error: ${blobError instanceof Error ? blobError.message : 'Unknown error'}`
+        };
+      }
     }
 
     // 로컬 환경에서는 파일 시스템 사용
