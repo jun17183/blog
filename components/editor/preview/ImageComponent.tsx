@@ -12,14 +12,18 @@ export const ImageComponent: Components['img'] = ({ src, alt, width, height, ...
     return null;
   }
   
+  // width와 height를 숫자로 변환 (props에서 받은 값이 string일 수 있음)
+  const imageWidth = typeof width === 'string' ? parseInt(width, 10) : (width || 800);
+  const imageHeight = typeof height === 'string' ? parseInt(height, 10) : (height || 600);
+  
   // Blob 타입인 경우 처리
   if (src instanceof Blob) {
     return (
       <Image 
         src={URL.createObjectURL(src)} 
         alt={alt || ''} 
-        width={800}
-        height={600}
+        width={imageWidth}
+        height={imageHeight}
         className={`max-w-full h-auto rounded-lg ${
           isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
         }`}
@@ -35,8 +39,8 @@ export const ImageComponent: Components['img'] = ({ src, alt, width, height, ...
     <Image 
       src={src} 
       alt={alt || ''} 
-      width={800}
-      height={600}
+      width={imageWidth}
+      height={imageHeight}
       unoptimized={isPublicImage}
       className={`max-w-full h-auto rounded-lg ${
         isDarkMode ? 'bg-gray-800' : 'bg-gray-100'

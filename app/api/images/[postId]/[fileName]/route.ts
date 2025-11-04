@@ -37,8 +37,8 @@ export async function GET(
     const extension = fileName.split('.').pop()?.toLowerCase();
     const contentType = getContentType(extension || '');
 
-    // 이미지 응답
-    return new NextResponse(fileBuffer, {
+    // 이미지 응답 (Buffer를 Uint8Array로 변환)
+    return new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
