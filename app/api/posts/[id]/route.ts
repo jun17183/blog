@@ -148,11 +148,31 @@ ${content}`;
   } catch (error) {
     console.error('Post update error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorCode = error instanceof Error && 'code' in error ? String(error.code) : undefined;
     const errorStack = error instanceof Error ? error.stack : undefined;
-    console.error('Error details:', { errorMessage, errorStack, CONTENTS_DIR, id });
+    console.error('Error details:', { 
+      errorMessage, 
+      errorCode,
+      errorStack, 
+      CONTENTS_DIR, 
+      id,
+      VERCEL: process.env.VERCEL,
+      NODE_ENV: process.env.NODE_ENV
+    });
+    
+    // Vercel 환경에서 파일 시스템 에러인 경우 명확한 메시지 반환
+    const isFileSystemError = errorCode === 'EACCES' || errorCode === 'EROFS' || 
+                              errorMessage.includes('read-only') || 
+                              errorMessage.includes('EACCES') ||
+                              errorMessage.includes('EROFS');
+    
     return NextResponse.json({ 
-      error: 'Failed to update post',
-      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      success: false,
+      error: isFileSystemError 
+        ? 'Vercel 환경에서는 파일 시스템에 직접 저장할 수 없습니다. 데이터베이스나 Vercel KV/Postgres를 사용해야 합니다.'
+        : `Failed to update post: ${errorMessage}`,
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+      errorCode
     }, { status: 500 });
   }
 }

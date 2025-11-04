@@ -72,6 +72,19 @@ export default function EditorPage() {
                 }),
       });
 
+      // 응답 상태 확인
+      if (!response.ok) {
+        let errorMessage = '게시글 저장에 실패했습니다.';
+        try {
+          const errorResult = await response.json();
+          errorMessage = errorResult.error || errorResult.details || errorMessage;
+        } catch {
+          // JSON 파싱 실패 시 기본 메시지 사용
+          errorMessage = `서버 오류 (${response.status}): ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
       const result = await response.json();
 
       if (result.success) {
@@ -79,11 +92,12 @@ export default function EditorPage() {
         setIsDirty(false);
         router.push('/blog');
       } else {
-        throw new Error(result.error);
+        throw new Error(result.error || '게시글 저장에 실패했습니다.');
       }
     } catch (error) {
       console.error('Publish failed:', error);
-      alert('게시글 저장에 실패했습니다.');
+      const errorMessage = error instanceof Error ? error.message : '게시글 저장에 실패했습니다.';
+      alert(errorMessage);
     } finally {
       setSaving(false);
     }
