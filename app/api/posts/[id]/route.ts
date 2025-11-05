@@ -2,14 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readFile, writeFile, rm, readdir } from 'fs/promises';
 import { join } from 'path';
 import { cleanupUnusedImages } from '@/lib/imageUtils';
-import { savePost, readPost, deletePost } from '@/lib/postStorage';
+import { savePost, readPost, deletePost, listPosts } from '@/lib/postStorage';
 
 const CONTENTS_DIR = join(process.cwd(), 'contents');
 
 /**
  * 고유한 slug 생성 (중복 방지)
+ * @param title - 게시글 제목
+ * @param excludePostId - 중복 체크에서 제외할 게시글 ID (수정 시 사용)
  */
-async function generateUniqueSlug(title: string): Promise<string> {
+async function generateUniqueSlug(title: string, excludePostId?: string): Promise<string> {
   // 제목이 비어있거나 공백만 있는 경우 처리
   if (!title || !title.trim()) {
     return 'untitled';
@@ -27,18 +29,24 @@ async function generateUniqueSlug(title: string): Promise<string> {
     baseSlug = 'untitled';
   }
 
-  // 기존 게시글들의 slug 확인
+  // 기존 게시글들의 slug 확인 (Vercel에서는 Blob Storage, 로컬에서는 파일 시스템)
   try {
-    const files = await readdir(CONTENTS_DIR);
-    const existingSlugs = new Set<string>();
+    const listResult = await listPosts();
+    if (!listResult.success || !listResult.posts) {
+      return baseSlug;
+    }
 
-    for (const file of files) {
+    const existingSlugs = new Set<string>();
+    const matter = await import('gray-matter');
+
+    for (const post of listResult.posts) {
+      // 수정 중인 게시글은 제외
+      if (excludePostId && post.id === excludePostId) {
+        continue;
+      }
+      
       try {
-        const filePath = join(CONTENTS_DIR, file, 'post.md');
-        const content = await readFile(filePath, 'utf-8');
-        const matter = await import('gray-matter');
-        const { data: frontmatter } = matter.default(content);
-        
+        const { data: frontmatter } = matter.default(post.content);
         if (frontmatter.slug) {
           existingSlugs.add(frontmatter.slug);
         }
@@ -125,8 +133,9 @@ export async function PUT(
     const { data: existingFrontmatter } = matter.default(readResult.content);
 
     // 고유한 slug 생성 (제목이 변경된 경우에만)
+    // 현재 수정 중인 게시글의 slug는 중복 체크에서 제외
     const uniqueSlug = title !== existingFrontmatter.title 
-      ? await generateUniqueSlug(title)
+      ? await generateUniqueSlug(title, id)
       : existingFrontmatter.slug;
 
     // 새로운 마크다운 파일 생성
