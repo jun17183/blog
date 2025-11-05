@@ -2,12 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { list } from '@vercel/blob';
 
 const CONTENTS_DIR = join(process.cwd(), 'contents');
 
+// 캐싱 최적화 - 이미지는 정적 파일이므로 적극적으로 캐싱
+export const dynamic = 'force-dynamic'; // 항상 최신 이미지 확인
+export const revalidate = 3600; // 1시간마다 재검증
+
 /**
  * 이미지 서빙 API
- * contents/[postId]/images/[fileName] 경로의 이미지를 서빙
+ * - Vercel 환경: Blob Storage에서 이미지 조회
+ * - 로컬 환경: contents/[postId]/images/[fileName] 경로의 이미지 서빙
  * URL: /api/images/[postId]/[fileName]
  */
 export async function GET(
@@ -22,10 +28,42 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid path' }, { status: 400 });
     }
 
-    // contents/[postId]/images/[fileName] 경로로 파일 읽기
+    // 1. Blob Storage 우선 확인 (Vercel 환경)
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      try {
+        const { blobs } = await list({
+          prefix: `${postId}/`,
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+        });
+
+        // 해당 파일명을 가진 blob 찾기
+        const imageBlob = blobs.find(blob => blob.pathname.endsWith(`/${fileName}`));
+        
+        if (imageBlob) {
+          // Blob Storage에서 이미지 가져오기
+          const response = await fetch(imageBlob.url);
+          const imageBuffer = await response.arrayBuffer();
+          
+          // Content-Type 결정
+          const extension = fileName.split('.').pop()?.toLowerCase();
+          const contentType = getContentType(extension || '');
+
+          return new NextResponse(imageBuffer, {
+            headers: {
+              'Content-Type': contentType,
+              'Cache-Control': 'public, max-age=31536000, immutable',
+            },
+          });
+        }
+      } catch (blobError) {
+        console.warn('Blob Storage image fetch failed, trying local:', blobError);
+        // Blob Storage 실패 시 로컬 파일 시스템으로 fallback
+      }
+    }
+
+    // 2. 로컬 파일 시스템 확인 (fallback)
     const filePath = join(CONTENTS_DIR, postId, 'images', fileName);
 
-    // 파일 존재 확인
     if (!existsSync(filePath)) {
       return NextResponse.json({ error: 'Image not found' }, { status: 404 });
     }
