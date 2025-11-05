@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile, writeFile, rm, readdir } from 'fs/promises';
-import { join } from 'path';
 import { cleanupUnusedImages } from '@/lib/imageUtils';
 import { savePost, readPost, deletePost, listPosts } from '@/lib/postStorage';
-
-const CONTENTS_DIR = join(process.cwd(), 'contents');
 
 /**
  * 고유한 slug 생성 (중복 방지)
@@ -150,7 +146,7 @@ published: true
 
 ${content}`;
 
-    // 게시글 저장 (Vercel에서는 Blob Storage, 로컬에서는 파일 시스템)
+    // 게시글 저장 (Blob Storage)
     const saveResult = await savePost(id, newFrontmatter);
     if (!saveResult.success) {
       console.error('Save post failed:', saveResult.error);
@@ -163,12 +159,6 @@ ${content}`;
       console.warn('Warning: Post saved but could not be verified:', verifyResult.error);
     } else {
       console.log('Post saved and verified successfully');
-    }
-
-    // 로컬 환경에서는 디렉토리 구조도 유지 (이미지 저장을 위해)
-    if (!process.env.VERCEL) {
-      const filePath = join(CONTENTS_DIR, id, 'post.md');
-      await writeFile(filePath, newFrontmatter, 'utf-8');
     }
 
     // 사용하지 않는 이미지들 정리
@@ -190,26 +180,12 @@ ${content}`;
       errorMessage, 
       errorCode,
       errorStack, 
-      CONTENTS_DIR, 
       id,
-      VERCEL: process.env.VERCEL,
       NODE_ENV: process.env.NODE_ENV
     });
     
-    // Vercel 환경에서 파일 시스템 에러인 경우 명확한 메시지 반환
-    const isFileSystemError = errorCode === 'EACCES' || errorCode === 'EROFS' || 
-                              errorMessage.includes('read-only') || 
-                              errorMessage.includes('EACCES') ||
-                              errorMessage.includes('EROFS');
-    
-    // 에러 메시지 생성 (항상 반환)
-    let userErrorMessage = '게시글 수정에 실패했습니다.';
-    
-    if (isFileSystemError) {
-      userErrorMessage = 'Vercel 환경에서는 파일 시스템에 직접 저장할 수 없습니다. 데이터베이스나 Vercel KV/Postgres를 사용해야 합니다.';
-    } else {
-      userErrorMessage = `게시글 수정 실패: ${errorMessage}`;
-    }
+    // 에러 메시지 생성
+    const userErrorMessage = `게시글 수정 실패: ${errorMessage}`;
     
     return NextResponse.json({ 
       success: false,
@@ -232,16 +208,10 @@ export async function DELETE(
     const resolvedParams = await params;
     id = resolvedParams.id;
     
-    // 게시글 삭제 (Vercel에서는 Blob Storage, 로컬에서는 파일 시스템)
+    // 게시글 삭제 (Blob Storage)
     const deleteResult = await deletePost(id);
     if (!deleteResult.success) {
       throw new Error(deleteResult.error || 'Failed to delete post');
-    }
-
-    // 로컬 환경에서는 디렉토리 구조도 삭제
-    if (!process.env.VERCEL) {
-      const postDir = join(CONTENTS_DIR, id);
-      await rm(postDir, { recursive: true, force: true });
     }
 
     return NextResponse.json({
@@ -253,7 +223,7 @@ export async function DELETE(
     console.error('Post delete error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
-    console.error('Error details:', { errorMessage, errorStack, CONTENTS_DIR, id });
+    console.error('Error details:', { errorMessage, errorStack, id });
     return NextResponse.json({ 
       error: 'Failed to delete post',
       details: process.env.NODE_ENV === 'development' ? errorMessage : undefined

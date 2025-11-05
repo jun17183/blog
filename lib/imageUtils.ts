@@ -1,72 +1,68 @@
-import { mkdir, rm, readdir } from 'fs/promises';
-import { join } from 'path';
-
-const CONTENTS_DIR = join(process.cwd(), 'contents');
+import { list, del } from '@vercel/blob';
 
 /**
- * 게시글 폴더 및 이미지 폴더 생성
- */
-export async function createPostImageDir(postId: string): Promise<void> {
-  const postDir = join(CONTENTS_DIR, postId);
-  const imageDir = join(postDir, 'images');
-  await mkdir(imageDir, { recursive: true });
-}
-
-/**
- * 게시글 폴더 삭제 (전체 폴더 삭제)
- */
-export async function deletePostImageDir(postId: string): Promise<void> {
-  const dirPath = join(CONTENTS_DIR, postId);
-  try {
-    await rm(dirPath, { recursive: true, force: true });
-  } catch {
-    console.error('Failed to delete post directory');
-  }
-}
-
-/**
- * 게시글의 모든 이미지 파일 목록 조회
+ * 게시글의 모든 이미지 파일 목록 조회 (Blob Storage 사용)
  */
 export async function getPostImages(postId: string): Promise<string[]> {
-  const imageDir = join(CONTENTS_DIR, postId, 'images');
   try {
-    const files = await readdir(imageDir);
-    return files.filter(file => 
-      file.match(/\.(jpg|jpeg|png|gif|webp)$/i)
-    );
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      return [];
+    }
+
+    const { blobs } = await list({
+      prefix: `${postId}/`,
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
+
+    // 이미지 파일만 필터링 (post.md 제외)
+    return blobs
+      .filter(blob => {
+        const pathname = blob.pathname;
+        return pathname.match(/\.(jpg|jpeg|png|gif|webp)$/i) && !pathname.endsWith('post.md');
+      })
+      .map(blob => {
+        // 파일명 추출: {postId}/{fileName}
+        const match = blob.pathname.match(/\/([^\/]+)$/);
+        return match ? match[1] : '';
+      })
+      .filter(Boolean);
   } catch {
     return [];
   }
 }
 
 /**
- * 특정 이미지들 삭제 (수정 취소 시 사용)
- */
-export async function deleteSpecificImages(postId: string, imageNames: string[]): Promise<void> {
-  const imageDir = join(CONTENTS_DIR, postId, 'images');
-  try {
-    for (const fileName of imageNames) {
-      await rm(join(imageDir, fileName), { force: true });
-    }
-  } catch (error) {
-    console.error('Failed to delete specific images:', error);
-  }
-}
-
-/**
- * 사용하지 않는 이미지들 정리 (게시글 저장 시 사용)
+ * 사용하지 않는 이미지들 정리 (게시글 저장 시 사용, Blob Storage 사용)
  */
 export async function cleanupUnusedImages(postId: string, usedImageNames: string[]): Promise<void> {
-  const imageDir = join(CONTENTS_DIR, postId, 'images');
   try {
-    const files = await readdir(imageDir);
-    const unusedFiles = files.filter(file => 
-      file.match(/\.(jpg|jpeg|png|gif|webp)$/i) && !usedImageNames.includes(file)
-    );
-    
-    for (const file of unusedFiles) {
-      await rm(join(imageDir, file), { force: true });
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.warn('BLOB_READ_WRITE_TOKEN is not configured, skipping cleanup');
+      return;
     }
+
+    const { blobs } = await list({
+      prefix: `${postId}/`,
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
+
+    // 이미지 파일만 필터링 (post.md 제외)
+    const imageBlobs = blobs.filter(blob => {
+      const pathname = blob.pathname;
+      return pathname.match(/\.(jpg|jpeg|png|gif|webp)$/i) && !pathname.endsWith('post.md');
+    });
+
+    // 사용하지 않는 이미지 찾기
+    const unusedBlobs = imageBlobs.filter(blob => {
+      const match = blob.pathname.match(/\/([^\/]+)$/);
+      const fileName = match ? match[1] : '';
+      return fileName && !usedImageNames.includes(fileName);
+    });
+
+    // 사용하지 않는 이미지 삭제
+    await Promise.all(
+      unusedBlobs.map(blob => del(blob.url, { token: process.env.BLOB_READ_WRITE_TOKEN! }))
+    );
   } catch (error) {
     console.error('Failed to cleanup unused images:', error);
   }

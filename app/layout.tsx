@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import 'highlight.js/styles/github.css'
 import { cn } from '@/lib/utils'
 import SessionProvider from '@/components/providers/SessionProvider'
 

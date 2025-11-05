@@ -109,13 +109,54 @@ export function Input() {
 
 // Preview 컴포넌트
 export function Preview() {
-  const { content, previewRef, showPreview } = useMarkdownEditorContext();
+  const { content, previewRef, showPreview, setContent } = useMarkdownEditorContext();
 
   if (!showPreview) return null;
 
+  // 이미지 리사이즈 핸들러
+  const handleImageResize = (src: string, width: number) => {
+    // 마크다운 콘텐츠에서 해당 이미지를 찾아 업데이트
+    const escapedSrc = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    // HTML img 태그 패턴
+    const htmlImgRegex = new RegExp(`<img([^>]*src=["']${escapedSrc}["'][^>]*)>`, 'gi');
+    
+    // 마크다운 이미지 패턴
+    const markdownImgRegex = new RegExp(`!\\[(.*?)\\]\\(${escapedSrc}\\)`, 'gi');
+    
+    let updatedContent = content;
+    
+    // HTML img 태그 업데이트
+    updatedContent = updatedContent.replace(htmlImgRegex, (match) => {
+      // width 속성이 있으면 업데이트
+      if (/width=["']?\d+["']?/i.test(match)) {
+        return match.replace(/width=["']?\d+["']?/i, `width="${width}"`);
+      } else {
+        // width 속성 추가 (닫는 태그 앞에)
+        if (match.endsWith('/>')) {
+          return match.replace(/\/>$/, `width="${width}" />`);
+        } else {
+          return match.replace(/>$/, ` width="${width}" />`);
+        }
+      }
+    });
+    
+    // 마크다운 형식인 경우 HTML로 변환
+    updatedContent = updatedContent.replace(markdownImgRegex, (match, alt) => {
+      return `<img src="${src}" alt="${alt || ''}" width="${width}" />`;
+    });
+    
+    setContent(updatedContent);
+  };
+
   return (
     <div className="flex flex-col h-full border-l border-gray-200 dark:border-gray-700">
-      <MarkdownPreview content={content} previewRef={previewRef} />
+      <MarkdownPreview 
+        content={content} 
+        previewRef={previewRef} 
+        isEditable={true}
+        onImageResize={handleImageResize}
+      />
     </div>
   );
 }

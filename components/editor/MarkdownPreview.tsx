@@ -32,9 +32,11 @@ import { ImageComponent } from './preview/ImageComponent';
 interface MarkdownPreviewProps {
   content: string;
   previewRef: React.RefObject<HTMLDivElement | null>;
+  isEditable?: boolean;
+  onImageResize?: (src: string, width: number) => void;
 }
 
-export default function MarkdownPreview({ content, previewRef }: MarkdownPreviewProps) {
+export default function MarkdownPreview({ content, previewRef, isEditable = false, onImageResize }: MarkdownPreviewProps) {
   const [isDarkMode] = useAtom(darkModeAtom);
 
   // 마크다운 컴포넌트 매핑
@@ -58,7 +60,7 @@ export default function MarkdownPreview({ content, previewRef }: MarkdownPreview
     strong: StrongComponent,
     em: EmComponent,
     del: DelComponent,
-    img: ImageComponent,
+    img: (props) => <ImageComponent {...props} isEditable={isEditable} onImageResize={onImageResize} />,
   };
 
   return (

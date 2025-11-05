@@ -1,20 +1,7 @@
-import { writeFile, mkdir, rm } from 'fs/promises';
-import { join } from 'path';
-import { put } from '@vercel/blob';
-
-// contents/[id]/images 구조로 이미지 저장
-const CONTENTS_DIR = join(process.cwd(), 'contents');
+import { put, list, del } from '@vercel/blob';
 
 /**
- * 이미지 폴더 생성
- */
-export async function createImageDir(postId: string): Promise<void> {
-  const imageDir = join(CONTENTS_DIR, postId, 'images');
-  await mkdir(imageDir, { recursive: true });
-}
-
-/**
- * 이미지 업로드 (Vercel에서는 Blob Storage, 로컬에서는 파일 시스템)
+ * 이미지 업로드 (Blob Storage 사용)
  */
 export async function uploadImageToPublic(
   file: File,
@@ -22,53 +9,21 @@ export async function uploadImageToPublic(
   fileName: string
 ): Promise<{ success: boolean; imageUrl?: string; markdownImage?: string; error?: string }> {
   try {
-    // Vercel 환경에서는 Blob Storage 사용
-    // BLOB_READ_WRITE_TOKEN이 없으면 에러 발생하므로 체크
-    if (process.env.VERCEL) {
-      // Blob Storage 토큰이 없으면 에러 메시지 반환
-      if (!process.env.BLOB_READ_WRITE_TOKEN) {
-        return {
-          success: false,
-          error: 'BLOB_READ_WRITE_TOKEN is not configured. Please set it in Vercel dashboard: Settings > Environment Variables'
-        };
-      }
-
-      try {
-        const blobPath = `${postId}/${fileName}`;
-        const blob = await put(blobPath, file, {
-          access: 'public',
-          addRandomSuffix: false,
-          token: process.env.BLOB_READ_WRITE_TOKEN,
-        });
-
-        const imageUrl = blob.url;
-        const markdownImage = `![${file.name}](${imageUrl})`;
-
-        return {
-          success: true,
-          imageUrl,
-          markdownImage
-        };
-      } catch (blobError) {
-        console.error('Blob Storage error:', blobError);
-        return {
-          success: false,
-          error: `Blob Storage error: ${blobError instanceof Error ? blobError.message : 'Unknown error'}`
-        };
-      }
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      return {
+        success: false,
+        error: 'BLOB_READ_WRITE_TOKEN is not configured. Please set it in your environment variables (.env.local for local development, or Vercel dashboard for production)'
+      };
     }
 
-    // 로컬 환경에서는 파일 시스템 사용
-    await createImageDir(postId);
+    const blobPath = `${postId}/${fileName}`;
+    const blob = await put(blobPath, file, {
+      access: 'public',
+      addRandomSuffix: false,
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const filePath = join(CONTENTS_DIR, postId, 'images', fileName);
-    
-    await writeFile(filePath, buffer);
-
-    // API 라우트를 통해 이미지 서빙
-    const imageUrl = `/api/images/${postId}/${fileName}`;
+    const imageUrl = blob.url;
     const markdownImage = `![${file.name}](${imageUrl})`;
 
     return {
@@ -76,36 +31,39 @@ export async function uploadImageToPublic(
       imageUrl,
       markdownImage
     };
-
   } catch (error) {
-    console.error('Image upload error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    const errorStack = error instanceof Error ? error.stack : undefined;
-    console.error('Error details:', { errorMessage, errorStack });
-    
+    console.error('Blob Storage error:', error);
     return {
       success: false,
-      error: errorMessage || 'Upload failed'
+      error: `Blob Storage error: ${error instanceof Error ? error.message : 'Unknown error'}`
     };
   }
 }
 
 /**
- * 이미지 삭제
+ * 이미지 삭제 (Blob Storage 사용)
  */
 export async function deleteImageFromPublic(postId: string, fileName: string): Promise<boolean> {
   try {
-    // Vercel 환경에서는 Blob Storage 삭제 (구현 필요)
-    if (process.env.VERCEL) {
-      // Vercel Blob Storage는 URL을 통해 삭제해야 함
-      // 현재는 삭제 기능을 사용하지 않으므로 일단 true 반환
-      console.warn('Image deletion not implemented for Vercel Blob Storage');
-      return true;
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.error('BLOB_READ_WRITE_TOKEN is not configured');
+      return false;
     }
 
-    // 로컬 환경에서는 파일 시스템에서 삭제
-    const filePath = join(CONTENTS_DIR, postId, 'images', fileName);
-    await rm(filePath, { force: true });
+    // Blob Storage에서 해당 이미지 찾기
+    const { blobs } = await list({
+      prefix: `${postId}/`,
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
+
+    const imageBlob = blobs.find(blob => blob.pathname.endsWith(fileName));
+    if (!imageBlob) {
+      console.warn(`Image not found: ${postId}/${fileName}`);
+      return false;
+    }
+
+    // Blob 삭제
+    await del(imageBlob.url, { token: process.env.BLOB_READ_WRITE_TOKEN });
     return true;
   } catch (error) {
     console.error('Image deletion error:', error);
@@ -114,21 +72,29 @@ export async function deleteImageFromPublic(postId: string, fileName: string): P
 }
 
 /**
- * 게시글의 모든 이미지 삭제
+ * 게시글의 모든 이미지 삭제 (Blob Storage 사용)
  */
 export async function deletePostImagesFromPublic(postId: string): Promise<boolean> {
   try {
-    // Vercel 환경에서는 Blob Storage 삭제 (구현 필요)
-    if (process.env.VERCEL) {
-      // Vercel Blob Storage는 URL을 통해 삭제해야 함
-      // 현재는 삭제 기능을 사용하지 않으므로 일단 true 반환
-      console.warn('Post images deletion not implemented for Vercel Blob Storage');
-      return true;
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.error('BLOB_READ_WRITE_TOKEN is not configured');
+      return false;
     }
 
-    // 로컬 환경에서는 파일 시스템에서 삭제
-    const imageDir = join(CONTENTS_DIR, postId, 'images');
-    await rm(imageDir, { recursive: true, force: true });
+    // Blob Storage에서 해당 게시글의 모든 이미지 찾기
+    const { blobs } = await list({
+      prefix: `${postId}/`,
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
+
+    // 이미지 파일만 필터링 (post.md 제외)
+    const imageBlobs = blobs.filter(blob => !blob.pathname.endsWith('post.md'));
+
+    // 모든 이미지 삭제
+    await Promise.all(
+      imageBlobs.map(blob => del(blob.url, { token: process.env.BLOB_READ_WRITE_TOKEN! }))
+    );
+
     return true;
   } catch (error) {
     console.error('Post images deletion error:', error);

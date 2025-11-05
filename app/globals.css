@@ -46,3 +46,41 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Syntax Highlighting Customization */
+.hljs {
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* Dark mode override for syntax highlighting */
+.dark .hljs {
+  background: #1e1e1e !important;
+  color: #d4d4d4 !important;
+}
+
+.dark .hljs-keyword {
+  color: #569cd6 !important;
+}
+
+.dark .hljs-string {
+  color: #ce9178 !important;
+}
+
+.dark .hljs-comment {
+  color: #6a9955 !important;
+}
+
+.dark .hljs-function {
+  color: #dcdcaa !important;
+}
+
+.dark .hljs-number {
+  color: #b5cea8 !important;
+}
+
+.dark .hljs-class,
+.dark .hljs-title {
+  color: #4ec9b0 !important;
+}

@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
 import { generatePostId } from '@/lib/postId';
 import { cleanupUnusedImages } from '@/lib/imageUtils';
 import { savePost, listPosts } from '@/lib/postStorage';
-
-const CONTENTS_DIR = join(process.cwd(), 'contents');
 
 /**
  * 고유한 slug 생성 (중복 방지)
@@ -94,18 +90,10 @@ published: true
 
 ${content}`;
 
-    // 게시글 저장 (Vercel에서는 Blob Storage, 로컬에서는 파일 시스템)
+    // 게시글 저장 (Blob Storage)
     const saveResult = await savePost(finalPostId, frontmatter);
     if (!saveResult.success) {
       throw new Error(saveResult.error || 'Failed to save post');
-    }
-
-    // 로컬 환경에서는 디렉토리 구조도 유지 (이미지 저장을 위해)
-    if (!process.env.VERCEL) {
-      const postDir = join(CONTENTS_DIR, finalPostId);
-      await mkdir(postDir, { recursive: true });
-      const filePath = join(postDir, 'post.md');
-      await writeFile(filePath, frontmatter, 'utf-8');
     }
 
     // 사용하지 않는 이미지들 정리
@@ -127,25 +115,11 @@ ${content}`;
       errorMessage, 
       errorCode,
       errorStack, 
-      CONTENTS_DIR,
-      VERCEL: process.env.VERCEL,
       NODE_ENV: process.env.NODE_ENV
     });
     
-    // Vercel 환경에서 파일 시스템 에러인 경우 명확한 메시지 반환
-    const isFileSystemError = errorCode === 'EACCES' || errorCode === 'EROFS' || 
-                              errorMessage.includes('read-only') || 
-                              errorMessage.includes('EACCES') ||
-                              errorMessage.includes('EROFS');
-    
-    // 에러 메시지 생성 (항상 반환)
-    let userErrorMessage = '게시글 저장에 실패했습니다.';
-    
-    if (isFileSystemError) {
-      userErrorMessage = 'Vercel 환경에서는 파일 시스템에 직접 저장할 수 없습니다. 데이터베이스나 Vercel KV/Postgres를 사용해야 합니다.';
-    } else {
-      userErrorMessage = `게시글 저장 실패: ${errorMessage}`;
-    }
+    // 에러 메시지 생성
+    const userErrorMessage = `게시글 저장 실패: ${errorMessage}`;
     
     return NextResponse.json({ 
       success: false,
@@ -185,7 +159,7 @@ export async function GET(request: NextRequest) {
     
     const matter = await import('gray-matter');
     
-    // 게시글 목록 가져오기 (Vercel에서는 Blob Storage, 로컬에서는 파일 시스템)
+    // 게시글 목록 가져오기 (Blob Storage)
     const listResult = await listPosts();
     if (!listResult.success || !listResult.posts) {
       return NextResponse.json({
@@ -268,7 +242,7 @@ export async function GET(request: NextRequest) {
     console.error('Posts fetch error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
-    console.error('Error details:', { errorMessage, errorStack, CONTENTS_DIR });
+    console.error('Error details:', { errorMessage, errorStack });
     return NextResponse.json({ 
       error: 'Failed to fetch posts',
       details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
