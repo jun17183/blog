@@ -134,13 +134,13 @@ export function Preview() {
       const altMatch = attributes.match(/alt=["']([^"']*)["']/i);
       const altText = altMatch ? altMatch[1] : '';
       
-      // 새로운 img 태그 생성 (깔끔하게)
-      return `<img src="${src}" alt="${altText}" style="width: ${width}px; height: auto; max-width: 100%;" />`;
+      // 새로운 img 태그 생성 (width 속성 사용)
+      return `<img src="${src}" alt="${altText}" width="${width}" />`;
     });
     
-    // 마크다운 형식인 경우 HTML로 변환 (inline style 사용)
+    // 마크다운 형식인 경우 HTML로 변환 (width 속성 사용)
     updatedContent = updatedContent.replace(markdownImgRegex, (match, alt) => {
-      return `<img src="${src}" alt="${alt || ''}" style="width: ${width}px; height: auto; max-width: 100%;" />`;
+      return `<img src="${src}" alt="${alt || ''}" width="${width}" />`;
     });
     
     setContent(updatedContent);
