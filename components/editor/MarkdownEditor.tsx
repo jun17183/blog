@@ -167,24 +167,24 @@ export function Editor() {
 
   return (
     <div className={cn(
-      'flex-1 grid h-full',
+      'grid h-full',
       {
         'grid-cols-1 lg:grid-cols-2': showPreview,
         'grid-cols-1': !showPreview,
       }
     )}>
       {/* 마크다운 입력 영역 */}
-      <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex flex-col overflow-hidden">
         <div className="flex-shrink-0">
           <Toolbar />
         </div>
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           <Input />
         </div>
       </div>
 
       {/* 미리보기 영역 */}
-      <div className="h-full overflow-y-auto">
+      <div className="overflow-y-auto">
         <Preview />
       </div>
     </div>

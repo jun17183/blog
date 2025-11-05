@@ -20,7 +20,7 @@ export default function MarkdownInput({
   const [isDarkMode] = useAtom(darkModeAtom);
 
   return (
-    <div className="h-full relative" data-editor="markdown">
+    <div className="relative" data-editor="markdown">
       <textarea
         ref={textareaRef}
         value={content}
@@ -28,14 +28,11 @@ export default function MarkdownInput({
         onScroll={onScroll}
         onKeyDown={onKeyDown}
         placeholder="당신의 이야기를 적어보세요..."
-        className={`w-full h-full px-6 py-4 border-none resize-none focus:outline-none font-mono text-sm leading-relaxed ${
+        className={`w-full min-h-[calc(100vh-280px)] px-6 py-4 border-none resize-none focus:outline-none font-mono text-sm leading-relaxed ${
           isDarkMode 
             ? 'bg-gray-900 text-white placeholder-gray-400' 
             : 'bg-white text-gray-900 placeholder-gray-500'
         }`}
-        style={{
-          scrollPaddingBottom: '80px'
-        }}
       />
     </div>
   );

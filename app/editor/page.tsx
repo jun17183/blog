@@ -136,7 +136,7 @@ export default function EditorPage() {
       </div>
 
       {/* 마크다운 에디터 - 남은 공간을 모두 사용 */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden pb-20">
         <MarkdownEditor 
           postId={tempPostId}
           isNewPost={true}

@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateImageId, isValidImageFile, isValidImageSize } from '@/lib/imageUtils';
 import { uploadImageToPublic } from '@/lib/simpleImageStorage';
 
+// 캐싱 비활성화
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();

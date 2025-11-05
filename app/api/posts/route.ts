@@ -3,6 +3,10 @@ import { generatePostId } from '@/lib/postId';
 import { cleanupUnusedImages } from '@/lib/imageUtils';
 import { savePost, listPosts } from '@/lib/postStorage';
 
+// 캐싱 비활성화 - 게시글 수정 시 즉시 반영
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 /**
  * 고유한 slug 생성 (중복 방지)
  */

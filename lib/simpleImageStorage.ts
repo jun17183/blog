@@ -1,7 +1,11 @@
 import { put, list, del } from '@vercel/blob';
+import { uploadImageLocal, deleteImageLocal, cleanupImagesLocal } from './localImageStorage';
+
+// 환경 확인: Vercel Blob Storage 사용 여부
+const useLocalStorage = !process.env.BLOB_READ_WRITE_TOKEN || process.env.USE_LOCAL_STORAGE === 'true';
 
 /**
- * 이미지 업로드 (Blob Storage 사용)
+ * 이미지 업로드 (환경에 따라 로컬 또는 Blob Storage 사용)
  */
 export async function uploadImageToPublic(
   file: File,
@@ -9,18 +13,38 @@ export async function uploadImageToPublic(
   fileName: string
 ): Promise<{ success: boolean; imageUrl?: string; markdownImage?: string; error?: string }> {
   try {
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    // 로컬 파일 시스템 사용
+    if (useLocalStorage) {
+      console.log('[Image Storage] Using local file system');
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      
+      const result = await uploadImageLocal(postId, fileName, buffer);
+      
+      if (!result.success) {
+        return {
+          success: false,
+          error: result.error
+        };
+      }
+
+      const imageUrl = result.url!;
+      const markdownImage = `![${file.name}](${imageUrl})`;
+
       return {
-        success: false,
-        error: 'BLOB_READ_WRITE_TOKEN is not configured. Please set it in your environment variables (.env.local for local development, or Vercel dashboard for production)'
+        success: true,
+        imageUrl,
+        markdownImage
       };
     }
 
+    // Vercel Blob Storage 사용
+    console.log('[Image Storage] Using Vercel Blob Storage');
     const blobPath = `${postId}/${fileName}`;
     const blob = await put(blobPath, file, {
       access: 'public',
       addRandomSuffix: false,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+      token: process.env.BLOB_READ_WRITE_TOKEN!,
     });
 
     const imageUrl = blob.url;
@@ -32,28 +56,29 @@ export async function uploadImageToPublic(
       markdownImage
     };
   } catch (error) {
-    console.error('Blob Storage error:', error);
+    console.error('Image upload error:', error);
     return {
       success: false,
-      error: `Blob Storage error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      error: `Image upload error: ${error instanceof Error ? error.message : 'Unknown error'}`
     };
   }
 }
 
 /**
- * 이미지 삭제 (Blob Storage 사용)
+ * 이미지 삭제 (환경에 따라 로컬 또는 Blob Storage 사용)
  */
 export async function deleteImageFromPublic(postId: string, fileName: string): Promise<boolean> {
   try {
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      console.error('BLOB_READ_WRITE_TOKEN is not configured');
-      return false;
+    // 로컬 파일 시스템 사용
+    if (useLocalStorage) {
+      const result = await deleteImageLocal(postId, fileName);
+      return result.success;
     }
 
-    // Blob Storage에서 해당 이미지 찾기
+    // Vercel Blob Storage 사용
     const { blobs } = await list({
       prefix: `${postId}/`,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+      token: process.env.BLOB_READ_WRITE_TOKEN!,
     });
 
     const imageBlob = blobs.find(blob => blob.pathname.endsWith(fileName));
@@ -62,8 +87,7 @@ export async function deleteImageFromPublic(postId: string, fileName: string): P
       return false;
     }
 
-    // Blob 삭제
-    await del(imageBlob.url, { token: process.env.BLOB_READ_WRITE_TOKEN });
+    await del(imageBlob.url, { token: process.env.BLOB_READ_WRITE_TOKEN! });
     return true;
   } catch (error) {
     console.error('Image deletion error:', error);
@@ -72,25 +96,24 @@ export async function deleteImageFromPublic(postId: string, fileName: string): P
 }
 
 /**
- * 게시글의 모든 이미지 삭제 (Blob Storage 사용)
+ * 게시글의 모든 이미지 삭제 (환경에 따라 로컬 또는 Blob Storage 사용)
  */
 export async function deletePostImagesFromPublic(postId: string): Promise<boolean> {
   try {
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      console.error('BLOB_READ_WRITE_TOKEN is not configured');
-      return false;
+    // 로컬 파일 시스템 사용
+    if (useLocalStorage) {
+      const result = await cleanupImagesLocal(postId);
+      return result.success;
     }
 
-    // Blob Storage에서 해당 게시글의 모든 이미지 찾기
+    // Vercel Blob Storage 사용
     const { blobs } = await list({
       prefix: `${postId}/`,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+      token: process.env.BLOB_READ_WRITE_TOKEN!,
     });
 
-    // 이미지 파일만 필터링 (post.md 제외)
     const imageBlobs = blobs.filter(blob => !blob.pathname.endsWith('post.md'));
 
-    // 모든 이미지 삭제
     await Promise.all(
       imageBlobs.map(blob => del(blob.url, { token: process.env.BLOB_READ_WRITE_TOKEN! }))
     );

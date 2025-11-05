@@ -1,26 +1,36 @@
 import { put, list, del } from '@vercel/blob';
+import { 
+  savePostLocal, 
+  readPostLocal, 
+  deletePostLocal, 
+  listPostsLocal 
+} from './localStorage';
+
+// 환경 확인: Vercel Blob Storage 사용 여부
+const useLocalStorage = !process.env.BLOB_READ_WRITE_TOKEN || process.env.USE_LOCAL_STORAGE === 'true';
 
 /**
- * 게시글 저장 (Blob Storage 사용)
+ * 게시글 저장 (환경에 따라 로컬 또는 Blob Storage 사용)
  */
 export async function savePost(
   postId: string,
   content: string
 ): Promise<{ success: boolean; error?: string }> {
-  try {
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      return {
-        success: false,
-        error: 'BLOB_READ_WRITE_TOKEN is not configured. Please set it in your environment variables (.env.local for local development, or Vercel dashboard for production)'
-      };
-    }
+  // 로컬 파일 시스템 사용
+  if (useLocalStorage) {
+    console.log('[Storage] Using local file system');
+    return savePostLocal(postId, content);
+  }
 
+  // Vercel Blob Storage 사용
+  try {
+    console.log('[Storage] Using Vercel Blob Storage');
     const blobPath = `posts/${postId}/post.md`;
     await put(blobPath, content, {
       access: 'public',
       addRandomSuffix: false,
-      allowOverwrite: true, // 기존 Blob 덮어쓰기 허용 (게시글 수정용)
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+      allowOverwrite: true,
+      token: process.env.BLOB_READ_WRITE_TOKEN!,
     });
 
     return { success: true };
@@ -34,21 +44,19 @@ export async function savePost(
 }
 
 /**
- * 게시글 읽기 (Blob Storage 사용)
+ * 게시글 읽기 (환경에 따라 로컬 또는 Blob Storage 사용)
  */
 export async function readPost(postId: string): Promise<{ success: boolean; content?: string; error?: string }> {
-  try {
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      return {
-        success: false,
-        error: 'BLOB_READ_WRITE_TOKEN is not configured'
-      };
-    }
+  // 로컬 파일 시스템 사용
+  if (useLocalStorage) {
+    return readPostLocal(postId);
+  }
 
-    // Blob Storage에서 읽기
+  // Vercel Blob Storage 사용
+  try {
     const { blobs } = await list({
       prefix: `posts/${postId}/`,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+      token: process.env.BLOB_READ_WRITE_TOKEN!,
     });
 
     const postBlob = blobs.find(blob => blob.pathname.endsWith('post.md'));
@@ -59,7 +67,6 @@ export async function readPost(postId: string): Promise<{ success: boolean; cont
       };
     }
 
-    // 캐시 무시를 위해 URL에 타임스탬프 추가
     const cacheBuster = `?t=${Date.now()}`;
     const response = await fetch(postBlob.url + cacheBuster, {
       cache: 'no-store',
@@ -77,23 +84,21 @@ export async function readPost(postId: string): Promise<{ success: boolean; cont
 }
 
 /**
- * 게시글 삭제 (Blob Storage 사용)
+ * 게시글 삭제 (환경에 따라 로컬 또는 Blob Storage 사용)
  */
 export async function deletePost(postId: string): Promise<{ success: boolean; error?: string }> {
-  try {
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      return {
-        success: false,
-        error: 'BLOB_READ_WRITE_TOKEN is not configured'
-      };
-    }
+  // 로컬 파일 시스템 사용
+  if (useLocalStorage) {
+    return deletePostLocal(postId);
+  }
 
+  // Vercel Blob Storage 사용
+  try {
     const { blobs } = await list({
       prefix: `posts/${postId}/`,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+      token: process.env.BLOB_READ_WRITE_TOKEN!,
     });
 
-    // 게시글 관련 모든 Blob 삭제
     await Promise.all(
       blobs.map(blob => del(blob.url, { token: process.env.BLOB_READ_WRITE_TOKEN! }))
     );
@@ -109,36 +114,31 @@ export async function deletePost(postId: string): Promise<{ success: boolean; er
 }
 
 /**
- * 모든 게시글 목록 가져오기 (Blob Storage 사용)
+ * 모든 게시글 목록 가져오기 (환경에 따라 로컬 또는 Blob Storage 사용)
  */
 export async function listPosts(): Promise<{ success: boolean; posts?: Array<{ id: string; content: string }>; error?: string }> {
-  try {
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      return {
-        success: false,
-        error: 'BLOB_READ_WRITE_TOKEN is not configured'
-      };
-    }
+  // 로컬 파일 시스템 사용
+  if (useLocalStorage) {
+    return listPostsLocal();
+  }
 
+  // Vercel Blob Storage 사용
+  try {
     const { blobs } = await list({
       prefix: 'posts/',
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+      token: process.env.BLOB_READ_WRITE_TOKEN!,
     });
 
-    // post.md 파일만 필터링
     const postBlobs = blobs.filter(blob => blob.pathname.endsWith('/post.md'));
     
-    // 각 게시글 읽기 (캐시 무시)
     const posts = await Promise.all(
       postBlobs.map(async (blob) => {
         try {
-          // 캐시 무시를 위해 URL에 타임스탬프 추가
           const cacheBuster = `?t=${Date.now()}`;
           const response = await fetch(blob.url + cacheBuster, {
             cache: 'no-store',
           });
           const content = await response.text();
-          // postId 추출: posts/{postId}/post.md
           const match = blob.pathname.match(/posts\/([^\/]+)\/post\.md/);
           const id = match ? match[1] : '';
           return { id, content };

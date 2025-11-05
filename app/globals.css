@@ -23,6 +23,38 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+/* 링크는 선택 불가 (커서 깜빡임 방지) */
+a, button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+/* 텍스트 입력 필드와 선택 가능한 콘텐츠는 선택 허용 */
+input, textarea, [contenteditable="true"], pre, code {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+}
+
+/* 마크다운 콘텐츠 영역은 선택 허용 */
+article, .markdown-body, [data-markdown-content], .prose, .prose * {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  user-select: text !important;
+}
+
+/* 포스트 제목과 본문은 선택 허용 (마크다운 콘텐츠 내부) */
+article h1, article h2, article h3, article h4, article h5, article h6,
+article p, .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6, .prose p {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  user-select: text !important;
 }
 
 /* Line clamp utilities */

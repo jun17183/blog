@@ -177,7 +177,7 @@ export default function EditPostPage() {
       </div>
 
       {/* 마크다운 에디터 */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden pb-20">
         <MarkdownEditor 
           initialContent={content}
           postId={postId}

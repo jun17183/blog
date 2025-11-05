@@ -9,7 +9,7 @@ const ReactMarkdown = dynamic(() => import('react-markdown'), {
   loading: () => <LoadingSpinner size="lg" text="게시글을 불러오는 중..." />
 });
 import { useAtom } from 'jotai';
-import { darkModeAtom, authAtom } from '@/atoms/blogAtoms';
+import { darkModeAtom, authAtom, selectedTagAtom, showTagsAtom } from '@/atoms/blogAtoms';
 import { useSession } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import { Edit, Trash2, ArrowLeft } from 'lucide-react';
@@ -48,6 +48,8 @@ export default function BlogDetailPage({
   const { slug } = use(params);
   const router = useRouter();
   const [isDarkMode] = useAtom(darkModeAtom);
+  const [, setSelectedTag] = useAtom(selectedTagAtom);
+  const [, setShowTags] = useAtom(showTagsAtom);
   const [auth] = useAtom(authAtom);
   const { data: session } = useSession();
   const isAdmin = auth.isAdmin || session?.isAdmin;
@@ -122,6 +124,16 @@ export default function BlogDetailPage({
     }
   };
 
+  // 태그 클릭 핸들러
+  const handleTagClick = (tag: string) => {
+    // 태그 선택
+    setSelectedTag(tag);
+    // 태그 섹션 표시
+    setShowTags(true);
+    // 목록 페이지로 이동
+    router.push('/blog');
+  };
+
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -185,19 +197,20 @@ export default function BlogDetailPage({
                 const displayTag = tag.length > 15 ? tag.substring(0, 15) + '...' : tag;
                 
                 return (
-                  <span
+                  <button
                     key={index}
+                    onClick={() => handleTagClick(tag)}
                     className={cn(
-                      'px-2 py-1 rounded text-xs font-medium max-w-[120px] truncate',
+                      'px-2 py-1 rounded text-xs font-medium max-w-[120px] truncate transition-colors cursor-pointer',
                       {
-                        'bg-gray-700 text-gray-300': isDarkMode,
-                        'bg-gray-100 text-gray-600': !isDarkMode,
+                        'bg-gray-700 text-gray-300 hover:bg-gray-600': isDarkMode,
+                        'bg-gray-100 text-gray-600 hover:bg-gray-200': !isDarkMode,
                       }
                     )}
-                    title={tag} // 전체 태그명을 툴팁으로 표시
+                    title={`${tag} 태그로 필터링하기`} // 툴팁 개선
                   >
                     #{displayTag}
-                  </span>
+                  </button>
                 );
               })}
               {post.tags.length > 4 && (
