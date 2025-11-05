@@ -53,9 +53,21 @@ function DefaultThumbnail({ isDarkMode }: { isDarkMode: boolean }) {
 
 // 썸네일 이미지 추출 함수
 function extractThumbnailFromContent(content: string): string | null {
-  const imageRegex = /!\[.*?\]\(([^)]+)\)/;
-  const match = content.match(imageRegex);
-  return match ? match[1] : null;
+  // 1. 먼저 HTML img 태그에서 src 추출 시도
+  const htmlImgRegex = /<img[^>]+src=["']([^"']+)["']/i;
+  const htmlMatch = content.match(htmlImgRegex);
+  if (htmlMatch) {
+    return htmlMatch[1];
+  }
+  
+  // 2. HTML img 태그가 없으면 마크다운 이미지 형식에서 추출
+  const markdownImgRegex = /!\[.*?\]\(([^)]+)\)/;
+  const markdownMatch = content.match(markdownImgRegex);
+  if (markdownMatch) {
+    return markdownMatch[1];
+  }
+  
+  return null;
 }
 
 export default function PostList({ posts, isDarkMode }: PostListProps) {
