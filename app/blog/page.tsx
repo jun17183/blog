@@ -58,6 +58,21 @@ export default function BlogListPage() {
     loadPosts(1, true);
   }, [loadPosts]);
 
+  // 페이지가 다시 포커스될 때마다 리프레시
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadPosts(1, true);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [loadPosts]);
+
   // Intersection Observer 설정 함수
   const setupIntersectionObserver = useCallback(() => {
     if (observerRef.current) {

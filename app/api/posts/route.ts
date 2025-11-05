@@ -230,7 +230,7 @@ export async function GET(request: NextRequest) {
     const endIndex = startIndex + limit;
     const paginatedPosts = validPosts.slice(startIndex, endIndex);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       posts: paginatedPosts,
       pagination: {
@@ -241,6 +241,13 @@ export async function GET(request: NextRequest) {
         hasPrevPage: page > 1
       }
     });
+
+    // 캐시 헤더 명시적 설정 (Vercel Edge Network 캐싱 방지)
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+
+    return response;
 
   } catch (error) {
     console.error('Posts fetch error:', error);

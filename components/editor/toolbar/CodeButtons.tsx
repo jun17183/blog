@@ -4,11 +4,10 @@ import { useAtom } from 'jotai';
 import { darkModeAtom } from '@/atoms/blogAtoms';
 
 interface CodeButtonsProps {
-  onCode: () => void;
   onCodeBlock: () => void;
 }
 
-export default function CodeButtons({ onCode, onCodeBlock }: CodeButtonsProps) {
+export default function CodeButtons({ onCodeBlock }: CodeButtonsProps) {
   const [isDarkMode] = useAtom(darkModeAtom);
 
   const toolbarButtonClass = `p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
@@ -16,21 +15,12 @@ export default function CodeButtons({ onCode, onCodeBlock }: CodeButtonsProps) {
   }`;
 
   return (
-    <div className="flex items-center gap-1">
-      <button
-        onClick={onCode}
-        className={toolbarButtonClass}
-        title="인라인 코드"
-      >
-        <Code size={16} />
-      </button>
-      <button
-        onClick={onCodeBlock}
-        className={toolbarButtonClass}
-        title="코드 블록"
-      >
-        <Code size={16} />
-      </button>
-    </div>
+    <button
+      onClick={onCodeBlock}
+      className={toolbarButtonClass}
+      title="코드 블록"
+    >
+      <Code size={16} />
+    </button>
   );
 }

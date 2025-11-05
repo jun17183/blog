@@ -68,7 +68,12 @@ export default function BlogDetailPage({
     const loadPost = async () => {
       try {
         // slug로 게시글을 찾기 위해 모든 게시글을 가져와서 필터링
-        const response = await fetch('/api/posts');
+        const response = await fetch(`/api/posts?_t=${Date.now()}`, {
+          cache: 'no-store', // Next.js 캐시 비활성화
+          headers: {
+            'Cache-Control': 'no-cache', // 브라우저 캐시 비활성화
+          }
+        });
         const result = await response.json();
 
         if (result.success) {

@@ -41,10 +41,16 @@ export function usePosts(selectedTag?: string | null): UsePostsReturn {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '15',
-        ...(selectedTag && { tag: selectedTag })
+        ...(selectedTag && { tag: selectedTag }),
+        _t: Date.now().toString() // 캐시 방지용 타임스탬프
       });
 
-      const response = await fetch(`/api/posts?${params}`);
+      const response = await fetch(`/api/posts?${params}`, {
+        cache: 'no-store', // Next.js 캐시 비활성화
+        headers: {
+          'Cache-Control': 'no-cache', // 브라우저 캐시 비활성화
+        }
+      });
       const result = await response.json();
 
       if (result.success) {
@@ -58,7 +64,12 @@ export function usePosts(selectedTag?: string | null): UsePostsReturn {
 
         // 첫 페이지 로드 시에만 태그 통계 계산
         if (page === 1) {
-          const allPostsResponse = await fetch('/api/posts?limit=1000');
+          const allPostsResponse = await fetch(`/api/posts?limit=1000&_t=${Date.now()}`, {
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache',
+            }
+          });
           const allPostsResult = await allPostsResponse.json();
 
           if (allPostsResult.success) {

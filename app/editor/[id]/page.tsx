@@ -37,7 +37,12 @@ export default function EditPostPage() {
   useEffect(() => {
     const loadPost = async () => {
       try {
-        const response = await fetch(`/api/posts/${postId}`);
+        const response = await fetch(`/api/posts/${postId}?_t=${Date.now()}`, {
+          cache: 'no-store', // Next.js 캐시 비활성화
+          headers: {
+            'Cache-Control': 'no-cache', // 브라우저 캐시 비활성화
+          }
+        });
         const result = await response.json();
 
         if (result.success) {
@@ -119,6 +124,7 @@ export default function EditPostPage() {
         alert('게시글이 성공적으로 수정되었습니다.');
         setIsDirty(false);
         router.push('/blog');
+        router.refresh(); // 페이지 데이터 리프레시
       } else {
         throw new Error(result.error || '게시글 수정에 실패했습니다.');
       }

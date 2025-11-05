@@ -91,7 +91,7 @@ export async function GET(
     const matter = await import('gray-matter');
     const { data: frontmatter, content: markdownContent } = matter.default(readResult.content);
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       post: {
         id,
@@ -99,6 +99,13 @@ export async function GET(
         content: markdownContent,
       }
     });
+
+    // 캐시 헤더 명시적 설정 (Vercel Edge Network 캐싱 방지)
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+
+    return response;
 
   } catch (error) {
     console.error('Post fetch error:', error);

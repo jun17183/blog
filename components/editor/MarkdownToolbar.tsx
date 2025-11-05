@@ -67,9 +67,8 @@ export default function MarkdownToolbar({
 
       <ToolbarSeparator />
 
-      {/* 코드 버튼들 */}
+      {/* 코드 블록 버튼 */}
       <CodeButtons 
-        onCode={handleCode}
         onCodeBlock={handleCodeBlock}
       />
 

@@ -85,6 +85,7 @@ export default function EditorPage() {
         alert('게시글이 성공적으로 저장되었습니다.');
         setIsDirty(false);
         router.push('/blog');
+        router.refresh(); // 페이지 데이터 리프레시
       } else {
         throw new Error(result.error || '게시글 저장에 실패했습니다.');
       }
