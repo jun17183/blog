@@ -13,14 +13,28 @@ interface ImageComponentProps {
   onImageResize?: (src: string, width: number) => void;
 }
 
-export const ImageComponent: Components['img'] = ({ src, alt, width, height, ...props }) => {
+export const ImageComponent: Components['img'] = ({ src, alt, width, height, style, ...props }) => {
   // React Hooks는 항상 최상단에서 호출
   const [isDarkMode] = useAtom(darkModeAtom);
   
   const isEditable = (props as ImageComponentProps).isEditable || false;
   const onImageResize = (props as ImageComponentProps).onImageResize;
-  const imageWidth = typeof width === 'string' ? parseInt(width, 10) : (width || 800);
-  const imageHeight = typeof height === 'string' ? parseInt(height, 10) : (height || 600);
+  
+  // style 속성에서 width 추출 (리사이즈된 경우)
+  let imageWidth = typeof width === 'string' ? parseInt(width, 10) : (width || 800);
+  let imageHeight = typeof height === 'string' ? parseInt(height, 10) : (height || 600);
+  
+  // style.width가 있으면 우선 사용 (리사이즈된 경우)
+  if (style && typeof style === 'object') {
+    const styleObj = style as React.CSSProperties;
+    if (styleObj.width) {
+      const widthStr = String(styleObj.width);
+      const parsedWidth = parseInt(widthStr, 10);
+      if (!isNaN(parsedWidth)) {
+        imageWidth = parsedWidth;
+      }
+    }
+  }
   
   // 빈 src 처리
   if (!src || src === '') {

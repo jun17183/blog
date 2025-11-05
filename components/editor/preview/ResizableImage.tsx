@@ -39,6 +39,16 @@ export default function ResizableImage({
   const startXRef = useRef<number>(0);
   const startWidthRef = useRef<number>(0);
 
+  // initialWidth prop이 변경될 때 내부 상태 동기화
+  useEffect(() => {
+    if (!isResizing) { // 리사이징 중이 아닐 때만 업데이트
+      const newWidth = typeof initialWidth === 'string' 
+        ? parseInt(initialWidth, 10) || 800 
+        : (initialWidth || 800);
+      setWidth(newWidth);
+    }
+  }, [initialWidth, isResizing]);
+
   // 이미지 로드 시 원본 비율 계산
   useEffect(() => {
     if (imageRef.current) {

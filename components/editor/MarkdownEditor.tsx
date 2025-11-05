@@ -130,24 +130,12 @@ export function Preview() {
     updatedContent = updatedContent.replace(htmlImgRegex, (match, before, after) => {
       const attributes = before + after;
       
-      // width와 height 속성 제거 (있다면)
-      let cleanedAttrs = attributes
-        .replace(/\s*width=["']?\d+["']?/gi, '')
-        .replace(/\s*height=["']?\d+["']?/gi, '');
+      // alt 속성 추출 (있다면)
+      const altMatch = attributes.match(/alt=["']([^"']*)["']/i);
+      const altText = altMatch ? altMatch[1] : '';
       
-      // style 속성 추가 또는 업데이트 (aspect ratio 유지)
-      if (/style=/i.test(cleanedAttrs)) {
-        // 기존 style 속성 업데이트
-        cleanedAttrs = cleanedAttrs.replace(
-          /style=["']([^"']*)["']/i, 
-          `style="width: ${width}px; height: auto; max-width: 100%;"`
-        );
-      } else {
-        // style 속성 추가
-        cleanedAttrs += ` style="width: ${width}px; height: auto; max-width: 100%;"`;
-      }
-      
-      return `<img${cleanedAttrs} src="${src}" />`;
+      // 새로운 img 태그 생성 (깔끔하게)
+      return `<img src="${src}" alt="${altText}" style="width: ${width}px; height: auto; max-width: 100%;" />`;
     });
     
     // 마크다운 형식인 경우 HTML로 변환 (inline style 사용)
