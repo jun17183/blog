@@ -118,8 +118,8 @@ export function Preview() {
     // 마크다운 콘텐츠에서 해당 이미지를 찾아 업데이트
     const escapedSrc = src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     
-    // HTML img 태그 패턴
-    const htmlImgRegex = new RegExp(`<img([^>]*src=["']${escapedSrc}["'][^>]*)>`, 'gi');
+    // HTML img 태그 패턴 (자가 닫는 태그와 일반 태그 모두 처리)
+    const htmlImgRegex = new RegExp(`<img([^>]*?)\\s*src=["']${escapedSrc}["']([^>]*?)\\s*/?>`, 'gi');
     
     // 마크다운 이미지 패턴
     const markdownImgRegex = new RegExp(`!\\[(.*?)\\]\\(${escapedSrc}\\)`, 'gi');
@@ -127,23 +127,32 @@ export function Preview() {
     let updatedContent = content;
     
     // HTML img 태그 업데이트
-    updatedContent = updatedContent.replace(htmlImgRegex, (match) => {
-      // width 속성이 있으면 업데이트
-      if (/width=["']?\d+["']?/i.test(match)) {
-        return match.replace(/width=["']?\d+["']?/i, `width="${width}"`);
+    updatedContent = updatedContent.replace(htmlImgRegex, (match, before, after) => {
+      const attributes = before + after;
+      
+      // width와 height 속성 제거 (있다면)
+      let cleanedAttrs = attributes
+        .replace(/\s*width=["']?\d+["']?/gi, '')
+        .replace(/\s*height=["']?\d+["']?/gi, '');
+      
+      // style 속성 추가 또는 업데이트 (aspect ratio 유지)
+      if (/style=/i.test(cleanedAttrs)) {
+        // 기존 style 속성 업데이트
+        cleanedAttrs = cleanedAttrs.replace(
+          /style=["']([^"']*)["']/i, 
+          `style="width: ${width}px; height: auto; max-width: 100%;"`
+        );
       } else {
-        // width 속성 추가 (닫는 태그 앞에)
-        if (match.endsWith('/>')) {
-          return match.replace(/\/>$/, `width="${width}" />`);
-        } else {
-          return match.replace(/>$/, ` width="${width}" />`);
-        }
+        // style 속성 추가
+        cleanedAttrs += ` style="width: ${width}px; height: auto; max-width: 100%;"`;
       }
+      
+      return `<img${cleanedAttrs} src="${src}" />`;
     });
     
-    // 마크다운 형식인 경우 HTML로 변환
+    // 마크다운 형식인 경우 HTML로 변환 (inline style 사용)
     updatedContent = updatedContent.replace(markdownImgRegex, (match, alt) => {
-      return `<img src="${src}" alt="${alt || ''}" width="${width}" />`;
+      return `<img src="${src}" alt="${alt || ''}" style="width: ${width}px; height: auto; max-width: 100%;" />`;
     });
     
     setContent(updatedContent);

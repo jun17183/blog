@@ -30,17 +30,21 @@ export const ImageComponent: Components['img'] = ({ src, alt, width, height, ...
   // Blob 타입인 경우 처리 (일반 Image로 렌더링)
   if (src instanceof Blob) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={URL.createObjectURL(src)}
-        alt={alt || ''}
-        width={imageWidth}
-        height={imageHeight}
-        className={`max-w-full h-auto rounded-lg ${
-          isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-        }`}
-        style={{ maxWidth: '100%', height: 'auto' }}
-      />
+      <div className="flex justify-center my-4">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={URL.createObjectURL(src)}
+          alt={alt || ''}
+          style={{ 
+            width: width ? `${imageWidth}px` : 'auto',
+            height: 'auto',
+            maxWidth: '100%'
+          }}
+          className={`rounded-lg ${
+            isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+          }`}
+        />
+      </div>
     );
   }
   
@@ -64,16 +68,20 @@ export const ImageComponent: Components['img'] = ({ src, alt, width, height, ...
   
   // 일반 모드 (블로그 페이지 등)
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={src}
-      alt={alt || ''}
-      width={imageWidth}
-      height={imageHeight}
-      className={`max-w-full h-auto rounded-lg ${
-        isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-      }`}
-      style={{ maxWidth: '100%', height: 'auto' }}
-    />
+    <div className="flex justify-center my-4">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt || ''}
+        style={{ 
+          width: width ? `${imageWidth}px` : 'auto',
+          height: 'auto',
+          maxWidth: '100%'
+        }}
+        className={`rounded-lg ${
+          isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+        }`}
+      />
+    </div>
   );
 }

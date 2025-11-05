@@ -97,29 +97,30 @@ export default function ResizableImage({
   const displayHeight = Math.round(width / aspectRatio);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative inline-block my-4"
-      style={{ width: `${width}px`, maxWidth: '100%' }}
-      onMouseEnter={() => isEditable && setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        ref={imageRef}
-        src={src}
-        alt={alt}
-        className={`rounded-lg ${
-          isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-        } ${isEditable && isHovered ? 'ring-2 ring-blue-500' : ''}`}
-        style={{ 
-          width: '100%', 
-          height: 'auto',
-          userSelect: 'none',
-          pointerEvents: isResizing ? 'none' : 'auto',
-          display: 'block'
-        }}
-      />
+    <div className="flex justify-center my-4">
+      <div
+        ref={containerRef}
+        className="relative"
+        style={{ width: `${width}px`, maxWidth: '100%' }}
+        onMouseEnter={() => isEditable && setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={imageRef}
+          src={src}
+          alt={alt}
+          className={`rounded-lg ${
+            isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+          } ${isEditable && isHovered ? 'ring-2 ring-blue-500' : ''}`}
+          style={{ 
+            width: '100%', 
+            height: 'auto',
+            userSelect: 'none',
+            pointerEvents: isResizing ? 'none' : 'auto',
+            display: 'block'
+          }}
+        />
       {isEditable && (isHovered || isResizing) && (
         <div
           className="absolute bottom-0 right-0 w-5 h-5 bg-blue-500 rounded-tl-lg cursor-nwse-resize flex items-center justify-center hover:bg-blue-600 transition-colors"
@@ -137,6 +138,7 @@ export default function ResizableImage({
           {width} × {displayHeight}
         </div>
       )}
+      </div>
     </div>
   );
 }
