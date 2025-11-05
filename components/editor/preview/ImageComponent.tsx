@@ -22,7 +22,6 @@ export const ImageComponent: Components['img'] = ({ src, alt, width, height, sty
   
   // style 속성에서 width 추출 (리사이즈된 경우)
   let imageWidth = typeof width === 'string' ? parseInt(width, 10) : (width || 800);
-  let imageHeight = typeof height === 'string' ? parseInt(height, 10) : (height || 600);
   
   // style.width가 있으면 우선 사용 (리사이즈된 경우)
   if (style && typeof style === 'object') {

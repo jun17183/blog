@@ -30,7 +30,6 @@ export default function MarkdownToolbar({
     handleStrikethrough,
     handleQuote,
     handleLink,
-    handleCode,
     handleCodeBlock,
     handleList,
     handleOrderedList,
