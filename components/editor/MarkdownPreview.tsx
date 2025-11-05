@@ -60,7 +60,8 @@ export default function MarkdownPreview({ content, previewRef, isEditable = fals
     strong: StrongComponent,
     em: EmComponent,
     del: DelComponent,
-    img: (props) => <ImageComponent {...props} isEditable={isEditable} onImageResize={onImageResize} />,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    img: (props) => (ImageComponent as any)({ ...props, isEditable, onImageResize }),
   };
 
   return (

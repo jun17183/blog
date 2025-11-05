@@ -14,8 +14,13 @@ interface ImageComponentProps {
 }
 
 export const ImageComponent: Components['img'] = ({ src, alt, width, height, ...props }) => {
+  // React Hooks는 항상 최상단에서 호출
+  const [isDarkMode] = useAtom(darkModeAtom);
+  
   const isEditable = (props as ImageComponentProps).isEditable || false;
   const onImageResize = (props as ImageComponentProps).onImageResize;
+  const imageWidth = typeof width === 'string' ? parseInt(width, 10) : (width || 800);
+  const imageHeight = typeof height === 'string' ? parseInt(height, 10) : (height || 600);
   
   // 빈 src 처리
   if (!src || src === '') {
@@ -24,11 +29,8 @@ export const ImageComponent: Components['img'] = ({ src, alt, width, height, ...
   
   // Blob 타입인 경우 처리 (일반 Image로 렌더링)
   if (src instanceof Blob) {
-    const [isDarkMode] = useAtom(darkModeAtom);
-    const imageWidth = typeof width === 'string' ? parseInt(width, 10) : (width || 800);
-    const imageHeight = typeof height === 'string' ? parseInt(height, 10) : (height || 600);
-    
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={URL.createObjectURL(src)}
         alt={alt || ''}
@@ -61,15 +63,8 @@ export const ImageComponent: Components['img'] = ({ src, alt, width, height, ...
   }
   
   // 일반 모드 (블로그 페이지 등)
-  const [isDarkMode] = useAtom(darkModeAtom);
-  const imageWidth = typeof width === 'string' ? parseInt(width, 10) : (width || 800);
-  const imageHeight = typeof height === 'string' ? parseInt(height, 10) : (height || 600);
-  
-  // Vercel Blob Storage URL 또는 API를 통해 서빙되는 이미지는 unoptimized 처리
-  const isBlobUrl = src.startsWith('https://') && src.includes('blob.vercel-storage.com');
-  const isPublicImage = src.startsWith('/api/images/') || src.startsWith('/images/');
-  
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
       alt={alt || ''}

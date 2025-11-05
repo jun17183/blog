@@ -104,6 +104,7 @@ export default function ResizableImage({
       onMouseEnter={() => isEditable && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={imageRef}
         src={src}
