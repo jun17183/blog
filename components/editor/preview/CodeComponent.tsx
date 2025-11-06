@@ -29,8 +29,8 @@ export const CodeComponent: Components['code'] = ({ className, children, ...prop
         className,
         'rounded-lg p-4 overflow-x-auto text-sm',
         {
-          'bg-gray-800 text-gray-100 border border-gray-700': isDarkMode,
-          'bg-gray-100 text-gray-800 border border-gray-200': !isDarkMode,
+          'bg-[#2d2d2d] text-gray-100 border border-gray-600': isDarkMode,
+          'bg-[#1e1e1e] text-gray-100 border border-gray-700': !isDarkMode,
         }
       )} {...(props as Record<string, unknown>)}>
         <code className={className}>

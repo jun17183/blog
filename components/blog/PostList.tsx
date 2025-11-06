@@ -1,6 +1,5 @@
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { FileText } from 'lucide-react';
 
 interface Post {
   id: string;
@@ -37,16 +36,16 @@ function DefaultThumbnail({ isDarkMode }: { isDarkMode: boolean }) {
         }
       )} />
       
-      <FileText 
-        size={32} 
-        className={cn(
-          'relative z-10',
-          {
-            'text-gray-400': isDarkMode,
-            'text-gray-500': !isDarkMode,
-          }
-        )} 
-      />
+      {/* Favicon 이미지 */}
+      <div className="relative z-10 w-16 h-16">
+        <Image
+          src="/favicon.ico"
+          alt="Default thumbnail"
+          width={64}
+          height={64}
+          className="object-contain"
+        />
+      </div>
     </div>
   );
 }

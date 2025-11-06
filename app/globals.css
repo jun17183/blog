@@ -86,9 +86,52 @@ article p, .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6, .pr
   line-height: 1.5;
 }
 
-/* Dark mode override for syntax highlighting */
-.dark .hljs {
+/* Light mode syntax highlighting (VS Code dark theme style) */
+.hljs {
   background: #1e1e1e !important;
+  color: #d4d4d4 !important;
+}
+
+.hljs-keyword {
+  color: #569cd6 !important;
+}
+
+.hljs-string {
+  color: #ce9178 !important;
+}
+
+.hljs-comment {
+  color: #6a9955 !important;
+}
+
+.hljs-function {
+  color: #dcdcaa !important;
+}
+
+.hljs-number {
+  color: #b5cea8 !important;
+}
+
+.hljs-class,
+.hljs-title {
+  color: #4ec9b0 !important;
+}
+
+.hljs-variable {
+  color: #9cdcfe !important;
+}
+
+.hljs-built_in {
+  color: #4ec9b0 !important;
+}
+
+.hljs-attr {
+  color: #9cdcfe !important;
+}
+
+/* Dark mode override for syntax highlighting (slightly lighter background) */
+.dark .hljs {
+  background: #2d2d2d !important;
   color: #d4d4d4 !important;
 }
 
@@ -115,4 +158,27 @@ article p, .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6, .pr
 .dark .hljs-class,
 .dark .hljs-title {
   color: #4ec9b0 !important;
+}
+
+.dark .hljs-variable {
+  color: #9cdcfe !important;
+}
+
+.dark .hljs-built_in {
+  color: #4ec9b0 !important;
+}
+
+.dark .hljs-attr {
+  color: #9cdcfe !important;
+}
+
+/* Horizontal rule styling - lighter colors */
+.prose hr {
+  border-color: #e5e7eb !important;
+  opacity: 0.65;
+}
+
+.dark .prose hr {
+  border-color: #374151 !important;
+  opacity: 0.65;
 }
