@@ -6,9 +6,9 @@ import { list } from '@vercel/blob';
 
 const CONTENTS_DIR = join(process.cwd(), 'contents');
 
-// 캐싱 최적화 - 이미지는 정적 파일이므로 적극적으로 캐싱
-export const dynamic = 'force-dynamic'; // 항상 최신 이미지 확인
-export const revalidate = 3600; // 1시간마다 재검증
+// 이미지는 변경되지 않는 정적 파일이므로 적극적으로 캐싱
+export const dynamic = 'force-static'; // 빌드 시 생성 가능하면 정적으로
+export const revalidate = false; // 무제한 캐싱 (이미지는 변경되지 않음)
 
 /**
  * 이미지 서빙 API
@@ -51,7 +51,8 @@ export async function GET(
           return new NextResponse(imageBuffer, {
             headers: {
               'Content-Type': contentType,
-              'Cache-Control': 'public, max-age=31536000, immutable',
+              'Cache-Control': 'public, max-age=31536000, immutable, s-maxage=31536000',
+              'CDN-Cache-Control': 'public, max-age=31536000, immutable',
             },
           });
         }
@@ -79,7 +80,8 @@ export async function GET(
     return new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
         'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Cache-Control': 'public, max-age=31536000, immutable, s-maxage=31536000',
+        'CDN-Cache-Control': 'public, max-age=31536000, immutable',
       },
     });
 

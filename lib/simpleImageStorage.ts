@@ -41,13 +41,15 @@ export async function uploadImageToPublic(
     // Vercel Blob Storage 사용
     console.log('[Image Storage] Using Vercel Blob Storage');
     const blobPath = `${postId}/${fileName}`;
-    const blob = await put(blobPath, file, {
+    await put(blobPath, file, {
       access: 'public',
       addRandomSuffix: false,
       token: process.env.BLOB_READ_WRITE_TOKEN!,
     });
 
-    const imageUrl = blob.url;
+    // 일관성을 위해 /api/images/ 형식으로 URL 반환
+    // API 라우트가 Blob Storage에서 이미지를 가져올 것임
+    const imageUrl = `/api/images/${postId}/${fileName}`;
     const markdownImage = `![${file.name}](${imageUrl})`;
 
     return {
