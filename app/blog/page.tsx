@@ -47,16 +47,35 @@ export default function BlogListPage() {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const loadPostsRef = useRef<typeof loadPosts | null>(null);
+  const initialLoadDone = useRef(false);
 
   // loadPosts 함수를 ref에 저장
   useEffect(() => {
     loadPostsRef.current = loadPosts;
   }, [loadPosts]);
 
-  // 초기 로드
+  // 초기 로드 (최초 1회만 또는 저장/수정 후 돌아왔을 때)
   useEffect(() => {
-    loadPosts(1, true);
-  }, [loadPosts]);
+    const shouldRefresh = localStorage.getItem('shouldRefreshPosts');
+    
+    if (!initialLoadDone.current || shouldRefresh === 'true') {
+      initialLoadDone.current = true;
+      // 플래그 제거
+      if (shouldRefresh === 'true') {
+        localStorage.removeItem('shouldRefreshPosts');
+      }
+      loadPosts(1, true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // selectedTag 변경 시 새로 불러오기
+  useEffect(() => {
+    if (initialLoadDone.current) {
+      loadPosts(1, true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTag]);
 
   // Intersection Observer 설정 함수
   const setupIntersectionObserver = useCallback(() => {

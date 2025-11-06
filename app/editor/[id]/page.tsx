@@ -123,8 +123,9 @@ export default function EditPostPage() {
       if (result.success) {
         alert('게시글이 성공적으로 수정되었습니다.');
         setIsDirty(false);
+        // 목록 새로고침 플래그 설정
+        localStorage.setItem('shouldRefreshPosts', 'true');
         router.push('/blog');
-        router.refresh(); // 페이지 데이터 리프레시
       } else {
         throw new Error(result.error || '게시글 수정에 실패했습니다.');
       }

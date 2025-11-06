@@ -42,15 +42,9 @@ export function usePosts(selectedTag?: string | null): UsePostsReturn {
         page: page.toString(),
         limit: '15',
         ...(selectedTag && { tag: selectedTag }),
-        _t: Date.now().toString() // 캐시 방지용 타임스탬프
       });
 
-      const response = await fetch(`/api/posts?${params}`, {
-        cache: 'no-store', // Next.js 캐시 비활성화
-        headers: {
-          'Cache-Control': 'no-cache', // 브라우저 캐시 비활성화
-        }
-      });
+      const response = await fetch(`/api/posts?${params}`);
       const result = await response.json();
 
       if (result.success) {
@@ -64,12 +58,7 @@ export function usePosts(selectedTag?: string | null): UsePostsReturn {
 
         // 첫 페이지 로드 시에만 태그 통계 계산
         if (page === 1) {
-          const allPostsResponse = await fetch(`/api/posts?limit=1000&_t=${Date.now()}`, {
-            cache: 'no-store',
-            headers: {
-              'Cache-Control': 'no-cache',
-            }
-          });
+          const allPostsResponse = await fetch(`/api/posts?limit=1000`);
           const allPostsResult = await allPostsResponse.json();
 
           if (allPostsResult.success) {
@@ -112,6 +101,7 @@ export function usePosts(selectedTag?: string | null): UsePostsReturn {
       const result = await response.json();
 
       if (result.success) {
+        // 목록에서 제거 (서버 재요청 없이 로컬 상태만 업데이트)
         setPosts(prev => prev.filter(post => post.id !== postId));
         setPagination(prev => ({
           ...prev,
