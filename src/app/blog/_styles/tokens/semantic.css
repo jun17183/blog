@@ -1,0 +1,65 @@
+:root {
+  /* ================================
+     SEMANTIC TOKENS - Light Mode
+     ================================ */
+
+  /* --- Background --- */
+  --bg-base: var(--color-white);
+  --bg-subtle: var(--color-gray-50);
+  --bg-muted: var(--color-gray-100);
+  --bg-elevated: var(--color-white);
+
+  /* --- Foreground (Text) --- */
+  --fg-default: var(--color-gray-900);
+  --fg-muted: var(--color-gray-700);
+  --fg-subtle: var(--color-gray-600);
+  --fg-faint: var(--color-gray-500);
+
+  /* --- Border --- */
+  --border-default: var(--color-gray-200);
+  --border-muted: var(--color-gray-300);
+
+  /* --- Interactive --- */
+  --interactive-primary: var(--color-blue-500);
+  --interactive-primary-hover: var(--color-blue-600);
+  --interactive-hover-bg: var(--color-gray-100);
+  --interactive-hover-text: var(--color-blue-600);
+
+  /* --- Status --- */
+  --status-success: var(--color-green-500);
+  --status-error: var(--color-red-500);
+  --status-error-hover: var(--color-red-600);
+
+  /* --- Accent --- */
+  --accent-primary: var(--color-blue-500);
+  --accent-secondary: var(--color-purple-500);
+}
+
+.dark {
+  /* ================================
+     SEMANTIC TOKENS - Dark Mode
+     ================================ */
+
+  /* --- Background --- */
+  --bg-base: var(--color-gray-950);
+  --bg-subtle: var(--color-gray-900);
+  --bg-muted: var(--color-gray-700);
+  --bg-elevated: var(--color-gray-800);
+
+  /* --- Foreground (Text) --- */
+  --fg-default: var(--color-white);
+  --fg-muted: var(--color-gray-300);
+  --fg-subtle: var(--color-gray-400);
+  --fg-faint: var(--color-gray-500);
+
+  /* --- Border --- */
+  --border-default: var(--color-gray-700);
+  --border-muted: var(--color-gray-600);
+
+  /* --- Interactive --- */
+  --interactive-hover-bg: var(--color-gray-800);
+  --interactive-hover-text: var(--color-blue-400);
+
+  /* --- Status --- */
+  --status-error-hover: var(--color-red-400);
+}
