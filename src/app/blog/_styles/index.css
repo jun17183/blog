@@ -1,3 +1,2 @@
-@import './tokens/primitive.css';
-@import './tokens/semantic.css';
-@import './tokens/component.css';
+@import 'tailwindcss';
+@import './semantic.css';
