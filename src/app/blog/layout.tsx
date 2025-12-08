@@ -1,14 +1,7 @@
-import '@/app/blog/_styles/index.css';
+import '@/styles/index.css';
 
-import { ThemeProvider } from '@/app/blog/_providers/ThemeProviders';
-import { QueryProvider } from '@/app/blog/_providers/QueryProvider';
+import { QueryProvider } from '@/providers/QueryProvider';
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <ThemeProvider>
-      <QueryProvider>
-        {children}
-      </QueryProvider>
-    </ThemeProvider>
-  );
+  return <QueryProvider>{children}</QueryProvider>;
 }
