@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '../../_lib/cn';
+import { cn } from '../../lib/cn';
 
 const spinnerVariants = cva('mx-auto animate-bounce', {
   variants: {
