@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { Client } from "@notionhq/client";
 import type { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 
@@ -36,7 +36,20 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       return new Response("No image URL", { status: 404 });
     }
 
-    return NextResponse.redirect(url);
+    const res = await fetch(url);
+    if (!res.ok) {
+      return new Response("Image fetch failed", { status: 502 });
+    }
+
+    const contentType = res.headers.get("content-type") ?? "image/png";
+    const body = await res.arrayBuffer();
+
+    return new Response(body, {
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": "public, max-age=1800, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    });
   } catch {
     return new Response("Page not found", { status: 404 });
   }
