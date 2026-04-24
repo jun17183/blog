@@ -24,7 +24,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
           ? block.image.external.url
           : null;
 
-    if (!url) {
+    if (!url || url.trim() === "") {
       return new Response("No image URL", { status: 404 });
     }
 

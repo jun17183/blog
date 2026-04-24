@@ -212,13 +212,18 @@ export async function getProfile(): Promise<Profile> {
         else if (trimmed.startsWith("LinkedIn:")) profile.linkedin = trimmed.replace("LinkedIn:", "").trim();
       }
     } else if (block.type === "image") {
-      const proxyUrl = blockImageProxy(block.id);
-      if (imageIndex === 0) {
-        profile.avatar = proxyUrl;
-      } else {
-        profile.defaultThumbnails.push(proxyUrl);
+      const hasUrl =
+        (block.image.type === "file" && block.image.file.url) ||
+        (block.image.type === "external" && block.image.external.url);
+      if (hasUrl) {
+        const proxyUrl = blockImageProxy(block.id);
+        if (imageIndex === 0) {
+          profile.avatar = proxyUrl;
+        } else {
+          profile.defaultThumbnails.push(proxyUrl);
+        }
+        imageIndex++;
       }
-      imageIndex++;
     }
   }
 
