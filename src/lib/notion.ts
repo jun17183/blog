@@ -45,14 +45,8 @@ function pageToPostMeta(page: PageObjectResponse): PostMeta {
         : null;
 
   const thumbProp = props.Thumbnail;
-  const thumbnail =
-    thumbProp?.type === "files" && thumbProp.files.length > 0
-      ? thumbProp.files[0].type === "file"
-        ? thumbProp.files[0].file.url
-        : thumbProp.files[0].type === "external"
-          ? thumbProp.files[0].external.url
-          : null
-      : null;
+  const hasThumb = thumbProp?.type === "files" && thumbProp.files.length > 0;
+  const thumbnail = hasThumb ? `/api/notion-image/page/${page.id}` : null;
 
   const pubProp = props.Published;
   const published =
@@ -189,6 +183,11 @@ export interface Profile {
   defaultThumbnails: string[];
 }
 
+/** Build a proxy URL for a Notion image block */
+function blockImageProxy(blockId: string): string {
+  return `/api/notion-image/block/${blockId}`;
+}
+
 export async function getProfile(): Promise<Profile> {
   const pageId = process.env.NOTION_PROFILE_PAGE_ID;
   if (!pageId) {
@@ -213,20 +212,13 @@ export async function getProfile(): Promise<Profile> {
         else if (trimmed.startsWith("LinkedIn:")) profile.linkedin = trimmed.replace("LinkedIn:", "").trim();
       }
     } else if (block.type === "image") {
-      const url =
-        block.image.type === "file"
-          ? block.image.file.url
-          : block.image.type === "external"
-            ? block.image.external.url
-            : null;
-      if (url) {
-        if (imageIndex === 0) {
-          profile.avatar = url;
-        } else {
-          profile.defaultThumbnails.push(url);
-        }
-        imageIndex++;
+      const proxyUrl = blockImageProxy(block.id);
+      if (imageIndex === 0) {
+        profile.avatar = proxyUrl;
+      } else {
+        profile.defaultThumbnails.push(proxyUrl);
       }
+      imageIndex++;
     }
   }
 

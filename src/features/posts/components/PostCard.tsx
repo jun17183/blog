@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { PostTagBadge } from "./PostTagBadge";
 import { formatDate } from "@/shared/utils/date";
 import type { PostMeta } from "@/features/posts/types/post";
@@ -27,12 +26,10 @@ export function PostCard({ post, defaultThumbnail }: PostCardProps) {
       <article className="rounded-2xl border border-border bg-surface overflow-hidden transition-all duration-200 group-hover:-translate-y-0.5 group-hover:border-border-strong group-hover:shadow-lg h-full flex flex-col">
         <div className="aspect-[16/10] relative overflow-hidden shrink-0">
           {post.thumbnail ? (
-            <Image
+            <img
               src={post.thumbnail}
               alt={post.title}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-              sizes="(max-width: 768px) 100vw, 33vw"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             />
           ) : defaultThumbnail ? (
             <div className="w-full h-full bg-surface-elevated flex items-center justify-center">
