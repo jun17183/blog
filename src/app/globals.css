@@ -213,28 +213,36 @@ body {
 /* 빈 블록은 한 줄 높이. 리듬이 Notion 편집 화면과 같게 보이도록 한다.       */
 /* ------------------------------------------------------------------ */
 .notion-content {
-  font-size: 1.0625rem; /* 17px */
-  line-height: 1.85;
+  font-size: 1rem; /* 16px */
+  line-height: 1.75;
   letter-spacing: -0.005em;
   overflow-wrap: anywhere;
 }
 
-/* 블록 간격: 위아래 패딩 + 마진으로 문단 사이 약 18px */
+/* 간격 3단계
+   1) 자연 줄바꿈: 행간만 (28px)
+   2) 블록 하나 넘어감(엔터 1번): 블록 사이 약 14px
+   3) 빈 블록(엔터 2번): 여기에 약 20px 추가 */
 .notion-block {
-  margin-block: 3px;
-  padding-block: 6px;
+  margin-block: 2px;
+  padding-block: 5px;
+}
+
+.notion-blank {
+  height: 20px;
 }
 
 /* 인용 블록은 연속으로 오는 경우가 많아 사이를 더 띄운다 */
 .notion-content blockquote.notion-block {
-  margin-block: 14px;
-  padding-block: 8px;
+  margin-block: 12px;
+  padding-block: 6px;
+  line-height: 1.7;
 }
 
 /* 헤딩은 앞 문단과 충분히 떨어지고 뒤 문단과는 가깝게 */
 .notion-content :is(h2, h3, h4).notion-block {
   padding-block: 0;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 /* 부모 블록 아래 들여쓰기된 하위 블록 */
@@ -242,13 +250,15 @@ body {
   padding-left: 1.5rem;
 }
 
+/* 리스트는 한 묶음으로 읽히도록 문단보다 촘촘하게 */
 .notion-content ul,
 .notion-content ol {
   margin-block: 4px;
 }
 
 .notion-content li.notion-block {
-  padding-block: 4px;
+  margin-block: 0;
+  padding-block: 2px;
 }
 
 .notion-content li::marker {

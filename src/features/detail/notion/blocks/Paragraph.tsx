@@ -7,9 +7,9 @@ interface Props {
 }
 
 export function Paragraph({ block, children }: Props) {
-  // Notion에서 빈 블록은 한 줄 높이의 여백으로 쓰인다. 같은 높이로 재현한다.
+  // Notion의 빈 블록(엔터 두 번)은 문단 간격 위에 추가되는 여백으로만 쓴다.
   if (block.paragraph.rich_text.length === 0) {
-    return <div aria-hidden className="notion-block h-[1lh]" />;
+    return <div aria-hidden className="notion-blank" />;
   }
 
   return (

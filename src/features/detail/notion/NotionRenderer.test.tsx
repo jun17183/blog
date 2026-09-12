@@ -59,9 +59,9 @@ describe("NotionRenderer", () => {
     expect(html.match(/<li/g)).toHaveLength(3);
   });
 
-  it("빈 문단은 한 줄 높이의 여백으로 렌더한다", () => {
+  it("빈 문단은 추가 여백 블록으로 렌더한다", () => {
     const html = render([block("paragraph", "")]);
-    expect(html).toContain('class="notion-block h-[1lh]"');
+    expect(html).toContain('class="notion-blank"');
     expect(html).not.toContain("<p");
   });
 
