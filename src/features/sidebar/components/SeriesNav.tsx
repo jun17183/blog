@@ -29,7 +29,7 @@ export function SeriesNav({ seriesNames, activeSeries }: SeriesNavProps) {
       className="-mx-6 flex gap-5 overflow-x-auto px-6 lg:mx-0 lg:flex-col lg:gap-0 lg:overflow-visible lg:px-0"
     >
       <Link href="/" className={`${linkBase} ${current === null ? linkActive : linkInactive}`}>
-        All.
+        All
       </Link>
       {seriesNames.map((name) => (
         <Link
