@@ -14,7 +14,7 @@ export async function SiteHeader() {
   const profile = await getProfile();
 
   return (
-    <header className="flex items-end justify-between gap-6 border-b-2 border-foreground pb-7">
+    <header className="flex items-end justify-between gap-6 border-b border-border pb-6">
       <Link href="/" className="flex items-center gap-4 min-w-0">
         {profile.avatar ? (
           // eslint-disable-next-line @next/next/no-img-element

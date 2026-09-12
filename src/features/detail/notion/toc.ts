@@ -7,9 +7,12 @@ const HEADING_LEVEL = {
   heading_3: 3,
 } as const;
 
-/** 헤딩 블록의 앵커 id. 블록 id는 안정적이므로 그대로 쓴다. */
+/**
+ * 헤딩 블록의 앵커 id. 블록 id는 안정적이므로 그대로 쓴다.
+ * 같은 페이지의 Notion 블록 id는 앞자리를 공유하므로 절대 잘라 쓰지 않는다.
+ */
 export function headingAnchorId(blockId: string): string {
-  return `h-${blockId.replace(/-/g, "").slice(0, 8)}`;
+  return `h-${blockId.replace(/-/g, "")}`;
 }
 
 /** 최상위 헤딩 블록만 목차로 뽑는다. */

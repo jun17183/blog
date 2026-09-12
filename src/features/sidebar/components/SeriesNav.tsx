@@ -9,7 +9,7 @@ interface SeriesNavProps {
 }
 
 const linkBase =
-  "block whitespace-nowrap py-[7px] text-[15px] tracking-[-0.01em] transition-colors md:whitespace-normal";
+  "block whitespace-nowrap py-[7px] text-[15px] tracking-[-0.01em] transition-colors lg:whitespace-normal";
 const linkActive = "text-foreground";
 const linkInactive = "text-faint hover:text-muted-foreground";
 
@@ -26,7 +26,7 @@ export function SeriesNav({ seriesNames, activeSeries }: SeriesNavProps) {
   return (
     <nav
       aria-label="Series"
-      className="-mx-6 flex gap-5 overflow-x-auto px-6 md:mx-0 md:flex-col md:gap-0 md:overflow-visible md:px-0"
+      className="-mx-6 flex gap-5 overflow-x-auto px-6 lg:mx-0 lg:flex-col lg:gap-0 lg:overflow-visible lg:px-0"
     >
       <Link href="/" className={`${linkBase} ${current === null ? linkActive : linkInactive}`}>
         All.

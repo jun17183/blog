@@ -31,8 +31,12 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <body className="min-h-dvh bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <div className="mx-auto w-full max-w-[1100px] px-6 pt-7 pb-20 md:px-9 md:pt-12">
-            <SiteHeader />
+          <div className="mx-auto w-full max-w-[1200px] px-6 pt-7 pb-20 md:px-9 md:pt-12">
+            <div className="site-columns">
+              <div className="col-main min-w-0">
+                <SiteHeader />
+              </div>
+            </div>
             <main className="min-w-0">{children}</main>
           </div>
         </ThemeProvider>

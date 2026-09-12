@@ -102,6 +102,25 @@
 
 html { color-scheme: light dark; }
 
+/* 페이지 공통 3단 컬럼. 헤더·목록·글이 모두 가운데 컬럼(--content-w)에 놓이고
+   시리즈 메뉴와 목차는 양옆 여백 컬럼에 놓인다. */
+:root { --content-w: 680px; --gutter-gap: 40px; }
+
+.site-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1024px) {
+  .site-columns {
+    grid-template-columns: minmax(0, 1fr) minmax(0, var(--content-w)) minmax(0, 1fr);
+    column-gap: var(--gutter-gap);
+  }
+  .site-columns > .col-main { grid-column: 2; }
+  .site-columns > .col-left { grid-column: 1; justify-self: end; width: 150px; }
+  .site-columns > .col-right { grid-column: 3; justify-self: start; width: 170px; }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

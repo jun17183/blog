@@ -53,11 +53,11 @@ export function TableOfContents({ items }: TableOfContentsProps) {
 
   return (
     <nav aria-label="Table of contents" className="text-[13px] leading-snug">
-      <ul className="flex flex-col gap-2 border-l border-border">
+      <ul className="flex flex-col gap-1.5 border-l border-border">
         {items.map((item) => {
           const isActive = item.id === activeId;
           return (
-            <li key={item.id} className={`-ml-px border-l ${isActive ? "border-foreground" : "border-transparent"}`}>
+            <li key={item.id} className={`-ml-px border-l transition-colors ${isActive ? "border-foreground" : "border-transparent"}`}>
               <a
                 href={`#${item.id}`}
                 className={`block py-0.5 pl-4 transition-colors ${LEVEL_INDENT[item.level]} ${

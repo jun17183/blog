@@ -17,12 +17,12 @@ export async function ContentLayout({ children, right, activeSeries }: ContentLa
   const seriesNames = await getAllSeries();
 
   return (
-    <div className="flex flex-col gap-8 pt-8 md:grid md:grid-cols-[150px_minmax(0,1fr)] md:gap-x-10 md:pt-12 lg:grid-cols-[150px_minmax(0,1fr)_170px]">
-      <aside className="md:sticky md:top-8 md:h-max">
+    <div className="site-columns gap-y-8 pt-8 lg:pt-12">
+      <aside className="col-left lg:sticky lg:top-8 lg:h-max">
         <SeriesNav seriesNames={seriesNames} activeSeries={activeSeries} />
       </aside>
-      <div className="min-w-0">{children}</div>
-      <aside className="hidden lg:block lg:sticky lg:top-8 lg:h-max">{right}</aside>
+      <div className="col-main min-w-0">{children}</div>
+      <aside className="col-right hidden lg:block lg:sticky lg:top-8 lg:h-max">{right}</aside>
     </div>
   );
 }
