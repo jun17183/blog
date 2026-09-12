@@ -1,27 +1,53 @@
 import type { RichTextItemResponse } from "@notionhq/client/build/src/api-endpoints";
+import type { CSSProperties } from "react";
 
 interface RichTextProps {
   richText: RichTextItemResponse[];
+}
+
+const NOTION_COLOR_NAMES = [
+  "gray",
+  "brown",
+  "orange",
+  "yellow",
+  "green",
+  "blue",
+  "purple",
+  "pink",
+  "red",
+] as const;
+
+type NotionColorName = (typeof NOTION_COLOR_NAMES)[number];
+
+function isNotionColorName(name: string): name is NotionColorName {
+  return (NOTION_COLOR_NAMES as readonly string[]).includes(name);
+}
+
+/** Map a Notion annotation color to inline CSS backed by tokens in globals.css */
+export function notionColorStyle(color: string): CSSProperties | undefined {
+  if (color === "default") return undefined;
+
+  const isBackground = color.endsWith("_background");
+  const name = isBackground ? color.replace("_background", "") : color;
+  if (!isNotionColorName(name)) return undefined;
+
+  return isBackground
+    ? { backgroundColor: `var(--notion-${name}-bg)` }
+    : { color: `var(--notion-${name})` };
 }
 
 export function RichText({ richText }: RichTextProps) {
   return (
     <>
       {richText.map((text, i) => {
-        const {
-          bold,
-          italic,
-          strikethrough,
-          underline,
-          code,
-          color,
-        } = text.annotations;
+        const { bold, italic, strikethrough, underline, code, color } =
+          text.annotations;
 
         let element: React.ReactNode = text.plain_text;
 
         if (code) {
           element = (
-            <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
+            <code className="rounded bg-muted px-1.5 py-0.5 text-[0.875em] font-mono text-notion-code">
               {element}
             </code>
           );
@@ -44,16 +70,9 @@ export function RichText({ richText }: RichTextProps) {
           );
         }
 
-        const style =
-          color !== "default"
-            ? { color: color.endsWith("_background") ? undefined : color }
-            : undefined;
-        const bgClass = color.endsWith("_background")
-          ? `bg-${color.replace("_background", "")}-100/20`
-          : undefined;
-
+        const style = notionColorStyle(color);
         return (
-          <span key={i} style={style} className={bgClass}>
+          <span key={i} style={style} className={style?.backgroundColor ? "rounded-sm px-0.5" : undefined}>
             {element}
           </span>
         );

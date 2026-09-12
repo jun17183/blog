@@ -9,7 +9,7 @@ export function ColumnList({ block }: Props) {
   const columns = block.children ?? [];
 
   return (
-    <div className="my-4 flex gap-4" style={{ gridTemplateColumns: `repeat(${columns.length}, 1fr)` }}>
+    <div className="my-2 flex flex-col gap-4 md:flex-row">
       {columns.map((column) => (
         <div key={column.id} className="flex-1 min-w-0">
           {column.children && <NotionRenderer blocks={column.children} />}

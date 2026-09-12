@@ -35,7 +35,7 @@ export function TagChips({ tags }: TagChipsProps) {
         return (
           <Link
             key={tag.name}
-            href={`/tags/${tag.name}`}
+            href={`/tags/${encodeURIComponent(tag.name)}`}
             className={`${chipBase} ${isActive ? chipActive : chipInactive}`}
           >
             {tag.name}

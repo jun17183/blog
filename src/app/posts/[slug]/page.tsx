@@ -26,9 +26,27 @@ export async function generateMetadata({
   const post = await getPostBySlug(decodeURIComponent(rawSlug));
   if (!post) return { title: "Not Found" };
 
+  const description = post.description || undefined;
+  const images = post.thumbnail ? [post.thumbnail] : undefined;
+
   return {
     title: post.title,
-    description: post.description || undefined,
+    description,
+    alternates: { canonical: `/posts/${encodeURIComponent(post.slug)}` },
+    openGraph: {
+      type: "article",
+      title: post.title,
+      description,
+      publishedTime: post.date || undefined,
+      tags: post.tags,
+      images,
+    },
+    twitter: {
+      card: images ? "summary_large_image" : "summary",
+      title: post.title,
+      description,
+      images,
+    },
   };
 }
 
@@ -68,7 +86,7 @@ export default async function PostPage({ params }: PostPageProps) {
           </div>
         )}
       </header>
-      <div className="text-base leading-7">
+      <div className="notion-content">
         <NotionRenderer blocks={blocks} />
       </div>
       <GiscusComments term={slug} />

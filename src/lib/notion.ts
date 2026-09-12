@@ -1,9 +1,17 @@
+import { cache } from "react";
 import { Client } from "@notionhq/client";
 import type { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import type { PostMeta } from "@/features/posts/types/post";
 
-const notion = new Client({ auth: process.env.NOTION_TOKEN });
-const dataSourceId = process.env.NOTION_DATABASE_ID!;
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} is not configured`);
+  return value;
+}
+
+/** 서버 전용 Notion 클라이언트. 라우트 핸들러도 이 인스턴스를 공유한다. */
+export const notion = new Client({ auth: requireEnv("NOTION_TOKEN") });
+const dataSourceId = requireEnv("NOTION_DATABASE_ID");
 
 function pageToPostMeta(page: PageObjectResponse): PostMeta {
   const props = page.properties;
@@ -65,7 +73,11 @@ function pageToPostMeta(page: PageObjectResponse): PostMeta {
   };
 }
 
-export async function getAllPosts(): Promise<PostMeta[]> {
+/**
+ * 한 번의 렌더(요청) 안에서 여러 컴포넌트가 호출해도 Notion API는 한 번만 탄다.
+ * Notion SDK는 fetch 캐시를 타지 않으므로 React cache()로 dedup한다.
+ */
+export const getAllPosts = cache(async (): Promise<PostMeta[]> => {
   const response = await notion.dataSources.query({
     data_source_id: dataSourceId,
     filter: {
@@ -78,11 +90,9 @@ export async function getAllPosts(): Promise<PostMeta[]> {
   return response.results
     .filter((page): page is PageObjectResponse => "properties" in page)
     .map(pageToPostMeta);
-}
+});
 
-export async function getPostBySlug(
-  slug: string,
-): Promise<PostMeta | null> {
+export const getPostBySlug = cache(async (slug: string): Promise<PostMeta | null> => {
   const response = await notion.dataSources.query({
     data_source_id: dataSourceId,
     filter: {
@@ -98,7 +108,7 @@ export async function getPostBySlug(
   );
   if (!page) return null;
   return pageToPostMeta(page);
-}
+});
 
 type NotionBlock = Extract<
   Awaited<ReturnType<typeof notion.blocks.children.list>>["results"][number],
@@ -159,7 +169,10 @@ export async function getAllTags(): Promise<{ name: string; count: number }[]> {
 
 export async function getAllSeries(): Promise<string[]> {
   const posts = await getAllPosts();
-  return [...new Set(posts.map((post) => post.series).filter(Boolean))] as string[];
+  const names = posts
+    .map((post) => post.series)
+    .filter((series): series is string => series !== null && series !== "");
+  return [...new Set(names)];
 }
 
 export async function getPostsByTag(tag: string): Promise<PostMeta[]> {

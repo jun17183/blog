@@ -6,24 +6,28 @@ import type {
 
 interface BulletedProps {
   block: BulletedListItemBlockObjectResponse;
+  children?: React.ReactNode;
 }
 
-export function BulletedListItem({ block }: BulletedProps) {
+export function BulletedListItem({ block, children }: BulletedProps) {
   return (
-    <li>
+    <li className="notion-block whitespace-pre-wrap">
       <RichText richText={block.bulleted_list_item.rich_text} />
+      {children}
     </li>
   );
 }
 
 interface NumberedProps {
   block: NumberedListItemBlockObjectResponse;
+  children?: React.ReactNode;
 }
 
-export function NumberedListItem({ block }: NumberedProps) {
+export function NumberedListItem({ block, children }: NumberedProps) {
   return (
-    <li>
+    <li className="notion-block whitespace-pre-wrap">
       <RichText richText={block.numbered_list_item.rich_text} />
+      {children}
     </li>
   );
 }

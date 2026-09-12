@@ -3,12 +3,16 @@ import type { QuoteBlockObjectResponse } from "@notionhq/client/build/src/api-en
 
 interface Props {
   block: QuoteBlockObjectResponse;
+  children?: React.ReactNode;
 }
 
-export function Quote({ block }: Props) {
+export function Quote({ block, children }: Props) {
   return (
-    <blockquote className="my-4 border-l-4 border-border pl-4 text-muted-foreground italic">
-      <RichText richText={block.quote.rich_text} />
+    <blockquote className="notion-block border-l-[3px] border-foreground pl-[14px]">
+      <p className="whitespace-pre-wrap">
+        <RichText richText={block.quote.rich_text} />
+      </p>
+      {children}
     </blockquote>
   );
 }

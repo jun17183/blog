@@ -34,8 +34,8 @@ export function SidebarNav({ totalCount, seriesList }: SidebarNavProps) {
         <span className="text-[11px] text-faint">{totalCount}</span>
       </Link>
       {seriesList.map((series) => {
-        const href = `/series/${series.name}`;
-        const isActive = decoded === href;
+        const href = `/series/${encodeURIComponent(series.name)}`;
+        const isActive = decoded === `/series/${series.name}`;
         return (
           <Link
             key={series.name}

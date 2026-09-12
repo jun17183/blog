@@ -20,14 +20,27 @@ interface NotionRendererProps {
   blocks: BlockWithChildren[];
 }
 
+type ListGroupType = "bulleted_list_item" | "numbered_list_item" | "to_do";
+
+const LIST_GROUP_CLASS: Record<ListGroupType, string> = {
+  bulleted_list_item: "list-disc pl-6 marker:text-foreground",
+  numbered_list_item: "list-decimal pl-6 marker:text-foreground",
+  to_do: "pl-0",
+};
+
+function isListGroupType(type: string): type is ListGroupType {
+  return type in LIST_GROUP_CLASS;
+}
+
 function renderBlock(block: BlockWithChildren) {
+  // Notion에서 들여쓰기된 하위 블록. 부모 블록 안에 렌더한다.
   const children = block.children ? (
     <NotionRenderer blocks={block.children} />
   ) : null;
 
   switch (block.type) {
     case "paragraph":
-      return <Paragraph key={block.id} block={block} />;
+      return <Paragraph key={block.id} block={block}>{children}</Paragraph>;
     case "heading_1":
     case "heading_2":
     case "heading_3":
@@ -37,13 +50,13 @@ function renderBlock(block: BlockWithChildren) {
     case "image":
       return <ImageBlock key={block.id} block={block} />;
     case "callout":
-      return <Callout key={block.id} block={block} />;
+      return <Callout key={block.id} block={block}>{children}</Callout>;
     case "quote":
-      return <Quote key={block.id} block={block} />;
+      return <Quote key={block.id} block={block}>{children}</Quote>;
     case "bulleted_list_item":
-      return <BulletedListItem key={block.id} block={block} />;
+      return <BulletedListItem key={block.id} block={block}>{children}</BulletedListItem>;
     case "numbered_list_item":
-      return <NumberedListItem key={block.id} block={block} />;
+      return <NumberedListItem key={block.id} block={block}>{children}</NumberedListItem>;
     case "divider":
       return <Divider key={block.id} />;
     case "toggle":
@@ -51,7 +64,7 @@ function renderBlock(block: BlockWithChildren) {
     case "bookmark":
       return <Bookmark key={block.id} block={block} />;
     case "to_do":
-      return <TodoItem key={block.id} block={block} />;
+      return <TodoItem key={block.id} block={block}>{children}</TodoItem>;
     case "table":
       return <Table key={block.id} block={block} />;
     case "video":
@@ -71,6 +84,10 @@ function renderBlock(block: BlockWithChildren) {
   }
 }
 
+/**
+ * 연속된 리스트 아이템 블록을 하나의 <ul>/<ol>로 묶는다.
+ * Notion API는 리스트를 개별 블록으로 주기 때문에 여기서 그룹핑한다.
+ */
 export function NotionRenderer({ blocks }: NotionRendererProps) {
   const elements: React.ReactNode[] = [];
   let i = 0;
@@ -78,44 +95,18 @@ export function NotionRenderer({ blocks }: NotionRendererProps) {
   while (i < blocks.length) {
     const block = blocks[i];
 
-    if (block.type === "bulleted_list_item") {
+    if (isListGroupType(block.type)) {
+      const groupType = block.type;
       const items: React.ReactNode[] = [];
-      while (i < blocks.length && blocks[i].type === "bulleted_list_item") {
+      while (i < blocks.length && blocks[i].type === groupType) {
         items.push(renderBlock(blocks[i]));
         i++;
       }
+      const ListTag = groupType === "numbered_list_item" ? "ol" : "ul";
       elements.push(
-        <ul key={`ul-${i}`} className="my-2 list-disc pl-6 space-y-1">
+        <ListTag key={`${groupType}-${block.id}`} className={LIST_GROUP_CLASS[groupType]}>
           {items}
-        </ul>,
-      );
-      continue;
-    }
-
-    if (block.type === "numbered_list_item") {
-      const items: React.ReactNode[] = [];
-      while (i < blocks.length && blocks[i].type === "numbered_list_item") {
-        items.push(renderBlock(blocks[i]));
-        i++;
-      }
-      elements.push(
-        <ol key={`ol-${i}`} className="my-2 list-decimal pl-6 space-y-1">
-          {items}
-        </ol>,
-      );
-      continue;
-    }
-
-    if (block.type === "to_do") {
-      const items: React.ReactNode[] = [];
-      while (i < blocks.length && blocks[i].type === "to_do") {
-        items.push(renderBlock(blocks[i]));
-        i++;
-      }
-      elements.push(
-        <ul key={`todo-${i}`} className="my-2 space-y-1 pl-1">
-          {items}
-        </ul>,
+        </ListTag>,
       );
       continue;
     }
@@ -124,5 +115,5 @@ export function NotionRenderer({ blocks }: NotionRendererProps) {
     i++;
   }
 
-  return <div className="prose-custom">{elements}</div>;
+  return <>{elements}</>;
 }

@@ -8,21 +8,9 @@ interface PostCardProps {
   defaultThumbnail?: string;
 }
 
-const COVER_GRADIENTS = [
-  "from-indigo-500/20 via-purple-500/20 to-pink-500/20",
-  "from-cyan-500/20 to-blue-600/20",
-  "from-amber-400/20 to-red-500/20",
-  "from-emerald-500/20 to-green-600/20",
-  "from-violet-500/20 to-fuchsia-500/20",
-  "from-rose-400/20 to-orange-500/20",
-];
-
 export function PostCard({ post, defaultThumbnail }: PostCardProps) {
-  const hash = post.id.charCodeAt(0) % COVER_GRADIENTS.length;
-  const gradient = COVER_GRADIENTS[hash];
-
   return (
-    <Link href={`/posts/${post.slug}`} className="group block">
+    <Link href={`/posts/${encodeURIComponent(post.slug)}`} className="group block">
       <article className="rounded-2xl border border-border bg-surface overflow-hidden transition-all duration-200 group-hover:-translate-y-0.5 group-hover:border-border-strong group-hover:shadow-lg h-full flex flex-col">
         <div className="aspect-[16/10] relative overflow-hidden shrink-0">
           {post.thumbnail ? (
@@ -44,17 +32,11 @@ export function PostCard({ post, defaultThumbnail }: PostCardProps) {
           )}
         </div>
         <div className="p-5 relative h-[180px]">
-          <h2 className="text-base font-bold leading-snug tracking-tight line-clamp-2">
+          <h2 className="text-lg font-bold leading-snug tracking-tight line-clamp-2">
             {post.title}
           </h2>
-          <div className="flex items-center gap-1.5 mt-2 text-[11px] uppercase tracking-[0.06em] text-faint">
+          <div className="mt-2 text-[11px] uppercase tracking-[0.06em] text-faint">
             <span>{formatDate(post.date)}</span>
-            {post.series && (
-              <>
-                <span className="inline-block w-[3px] h-[3px] rounded-full bg-faint" />
-                <span>{post.series}</span>
-              </>
-            )}
           </div>
           {post.description && (
             <p className="mt-2.5 text-[13px] leading-relaxed text-muted-foreground line-clamp-2">

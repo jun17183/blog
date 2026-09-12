@@ -1,15 +1,24 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { Sidebar } from "@/features/sidebar/components/Sidebar";
+import { getSiteUrl } from "@/shared/utils/site";
 import "./globals.css";
 
+const SITE_NAME = "Blog";
+
 export const metadata: Metadata = {
-  title: "Blog",
+  metadataBase: new URL(getSiteUrl()),
+  title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
   description: "Personal blog",
   alternates: {
     types: {
       "application/rss+xml": "/feed.xml",
     },
+  },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "ko_KR",
   },
 };
 

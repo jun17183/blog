@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { SidebarNav } from "./SidebarNav";
-import { getAllSeries, getPostsBySeries, getAllPosts, getProfile } from "@/lib/notion";
+import { getAllSeries, getAllPosts, getProfile } from "@/lib/notion";
 
 function GitHubIcon() {
   return (
@@ -25,38 +25,38 @@ export async function Sidebar() {
     getProfile(),
   ]);
 
-  const seriesList = await Promise.all(
-    seriesNames.map(async (name) => {
-      const sp = await getPostsBySeries(name);
-      return { name, count: sp.length };
-    }),
-  );
+  const seriesList = seriesNames.map((name) => ({
+    name,
+    count: posts.filter((post) => post.series === name).length,
+  }));
 
   return (
     <aside className="hidden lg:flex flex-col border-r border-border bg-background fixed top-0 left-0 bottom-0 w-[260px] px-7 py-10 overflow-y-auto z-30">
-      {profile.avatar ? (
-        <img
-          src={profile.avatar}
-          alt="Profile"
-          width={100}
-          height={100}
-          className="rounded-full object-cover w-[100px] h-[100px]"
-        />
-      ) : (
-        <Image
-          src="/avatar.png"
-          alt="Profile"
-          width={100}
-          height={100}
-          className="rounded-full"
-          priority
-        />
-      )}
-      <h1 className="mt-4 text-[17px] font-bold tracking-tight">{profile.name}</h1>
-      <p className="text-[13px] text-muted-foreground leading-relaxed mt-1.5">
-        {profile.bio}
-      </p>
-      <div className="flex items-center gap-3 mt-4 text-muted-foreground">
+      <div className="flex flex-col items-center text-center">
+        {profile.avatar ? (
+          <img
+            src={profile.avatar}
+            alt="Profile"
+            width={150}
+            height={150}
+            className="rounded-full object-cover w-[150px] h-[150px]"
+          />
+        ) : (
+          <Image
+            src="/avatar.png"
+            alt="Profile"
+            width={150}
+            height={150}
+            className="rounded-full"
+            priority
+          />
+        )}
+        <h1 className="mt-4 text-xl font-bold tracking-tight">{profile.name}</h1>
+        <p className="text-[13px] text-muted-foreground leading-relaxed mt-1.5">
+          {profile.bio}
+        </p>
+      </div>
+      <div className="flex items-center justify-center gap-3 mt-4 text-muted-foreground">
         {profile.github && (
           <a
             href={profile.github}
@@ -79,6 +79,7 @@ export async function Sidebar() {
         )}
       </div>
 
+      <div className="mt-6 border-t border-border" />
       <SidebarNav totalCount={posts.length} seriesList={seriesList} />
 
     </aside>

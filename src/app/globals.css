@@ -17,6 +17,27 @@
   --accent-foreground: #ffffff;
   --card: var(--surface);
   --muted: var(--surface-elevated);
+
+  /* Notion text/background colors (light) */
+  --notion-gray: #787774;
+  --notion-brown: #9f6b53;
+  --notion-orange: #d9730d;
+  --notion-yellow: #cb912f;
+  --notion-green: #448361;
+  --notion-blue: #337ea9;
+  --notion-purple: #9065b0;
+  --notion-pink: #c14c8a;
+  --notion-red: #d44c47;
+  --notion-gray-bg: #f1f1ef;
+  --notion-brown-bg: #f4eeee;
+  --notion-orange-bg: #fbecdd;
+  --notion-yellow-bg: #fbf3db;
+  --notion-green-bg: #edf3ec;
+  --notion-blue-bg: #e7f3f8;
+  --notion-purple-bg: #f6f3f9;
+  --notion-pink-bg: #faf1f5;
+  --notion-red-bg: #fdebec;
+  --notion-code: #eb5757;
 }
 
 .dark {
@@ -34,6 +55,27 @@
   --accent-foreground: #ffffff;
   --card: var(--surface);
   --muted: var(--surface-elevated);
+
+  /* Notion text/background colors (dark) */
+  --notion-gray: #9b9b9b;
+  --notion-brown: #ba856f;
+  --notion-orange: #c77d48;
+  --notion-yellow: #ca9849;
+  --notion-green: #529e72;
+  --notion-blue: #5e87c9;
+  --notion-purple: #9d68d3;
+  --notion-pink: #d15796;
+  --notion-red: #df5452;
+  --notion-gray-bg: #2f2f2f;
+  --notion-brown-bg: #4a3228;
+  --notion-orange-bg: #5c3b23;
+  --notion-yellow-bg: #564328;
+  --notion-green-bg: #243d30;
+  --notion-blue-bg: #143a4e;
+  --notion-purple-bg: #3c2d49;
+  --notion-pink-bg: #4e2c3c;
+  --notion-red-bg: #522e2a;
+  --notion-code: #ff7b72;
 }
 
 @theme inline {
@@ -51,6 +93,7 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-soft: var(--accent-soft);
   --color-accent-foreground: var(--accent-foreground);
+  --color-notion-code: var(--notion-code);
 
   --font-sans:
     -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Text",
@@ -77,16 +120,16 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(50rem 40rem at 10% 5%, rgba(147, 112, 219, 0.06), transparent 50%),
-    radial-gradient(45rem 35rem at 85% 85%, rgba(100, 180, 255, 0.06), transparent 50%),
-    radial-gradient(40rem 30rem at 95% 95%, rgba(255, 130, 170, 0.05), transparent 50%);
+    radial-gradient(100rem 55rem at 10% 5%, rgba(147, 112, 219, 0.09), transparent 55%),
+    radial-gradient(50rem 40rem at 90% 5%, rgba(147, 112, 219, 0.09), transparent 50%),
+    radial-gradient(50rem 40rem at 90% 90%, rgba(147, 112, 219, 0.08), transparent 50%);
 }
 
 .dark body::before {
   background:
-    radial-gradient(50rem 40rem at 10% 5%, rgba(120, 80, 220, 0.1), transparent 50%),
-    radial-gradient(45rem 35rem at 85% 85%, rgba(60, 130, 255, 0.08), transparent 50%),
-    radial-gradient(40rem 30rem at 95% 95%, rgba(220, 80, 140, 0.06), transparent 50%);
+    radial-gradient(100rem 55rem at 10% 5%, rgba(120, 80, 220, 0.14), transparent 55%),
+    radial-gradient(50rem 40rem at 90% 5%, rgba(120, 80, 220, 0.14), transparent 50%),
+    radial-gradient(50rem 40rem at 90% 90%, rgba(120, 80, 220, 0.12), transparent 50%);
 }
 
 /* Pixel art rendering */
@@ -145,3 +188,47 @@ body::before {
 .animate-ditto-sleep { animation: ditto-sleep 2s ease-in-out infinite; }
 .animate-ditto-zzz { animation: ditto-zzz 2s ease-in-out infinite; }
 .animate-ditto-heart { animation: ditto-heart 0.6s ease-out forwards; }
+
+/* ------------------------------------------------------------------ */
+/* Notion 본문 렌더링                                                    */
+/* Notion 블록 모델을 따른다: 블록마다 위아래 3px 패딩 + 1px 마진,         */
+/* 빈 블록은 한 줄 높이. 리듬이 Notion 편집 화면과 같게 보이도록 한다.       */
+/* ------------------------------------------------------------------ */
+.notion-content {
+  font-size: 1rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.notion-block {
+  margin-block: 1px;
+  padding-block: 3px;
+}
+
+/* 부모 블록 아래 들여쓰기된 하위 블록 */
+.notion-indent {
+  padding-left: 1.5rem;
+}
+
+.notion-content ul,
+.notion-content ol {
+  margin-block: 1px;
+}
+
+.notion-content li::marker {
+  font-variant-numeric: tabular-nums;
+}
+
+/* shiki 출력 <pre>에는 패딩이 없다 */
+.notion-content pre {
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  line-height: 1.6;
+  font-size: 0.875rem;
+  font-family: var(--font-mono);
+  tab-size: 2;
+}
+
+.notion-content pre code {
+  font-family: inherit;
+}

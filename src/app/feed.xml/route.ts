@@ -1,4 +1,5 @@
 import { getAllPosts } from "@/lib/notion";
+import { getSiteUrl } from "@/shared/utils/site";
 
 export const revalidate = 60;
 
@@ -12,7 +13,7 @@ function escapeXml(str: string): string {
 }
 
 export async function GET() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const siteUrl = getSiteUrl();
   const posts = await getAllPosts();
 
   const items = posts
