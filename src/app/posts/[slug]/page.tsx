@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import { BackButton } from "@/features/detail/components/BackButton";
-import { HeaderActions } from "@/features/header/components/HeaderActions";
-import { PostTagBadge } from "@/features/posts/components/PostTagBadge";
 import { NotionRenderer } from "@/features/detail/notion/NotionRenderer";
 import { GiscusComments } from "@/features/comments/components/GiscusComments";
+import { TableOfContents } from "@/features/detail/components/TableOfContents";
+import { extractToc } from "@/features/detail/notion/toc";
+import { ContentLayout } from "@/features/sidebar/components/ContentLayout";
 import { getPostBySlug, getPostBlocks, getAllPosts } from "@/lib/notion";
-import { formatDate } from "@/shared/utils/date";
+import { formatDateCompact } from "@/shared/utils/date";
 import type { Metadata } from "next";
 
 export const revalidate = 60;
@@ -57,40 +58,26 @@ export default async function PostPage({ params }: PostPageProps) {
   if (!post) notFound();
 
   const blocks = await getPostBlocks(post.id);
+  const toc = extractToc(blocks);
 
   return (
-    <>
-    <div className="flex items-center justify-between gap-4 mb-4">
+    <ContentLayout activeSeries={post.series} right={<TableOfContents items={toc} />}>
       <BackButton />
-      <HeaderActions />
-    </div>
-    <article className="rounded-2xl border border-border bg-surface p-8 md:p-12 shadow-sm">
-      <header className="mb-10">
-        <h1 className="text-3xl font-bold leading-tight tracking-tight">
-          {post.title}
-        </h1>
-        <div className="flex items-center gap-2 mt-3 text-[11px] uppercase tracking-[0.06em] text-faint">
-          <span>{formatDate(post.date)}</span>
-          {post.series && (
-            <>
-              <span className="inline-block w-[3px] h-[3px] rounded-full bg-faint" />
-              <span>{post.series}</span>
-            </>
-          )}
-        </div>
-        {post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-4">
-            {post.tags.map((tag) => (
-              <PostTagBadge key={tag} name={tag} />
-            ))}
+      <article className="pt-8">
+        <header className="mb-12">
+          <h1 className="text-[28px] font-semibold leading-[1.3] tracking-[-0.02em] md:text-[32px]">
+            {post.title}
+          </h1>
+          <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-faint">
+            <time dateTime={post.date}>{formatDateCompact(post.date)}</time>
+            {post.tags.length > 0 && <span>{post.tags.join(" · ")}</span>}
           </div>
-        )}
-      </header>
-      <div className="notion-content">
-        <NotionRenderer blocks={blocks} />
-      </div>
-      <GiscusComments term={slug} />
-    </article>
-    </>
+        </header>
+        <div className="notion-content">
+          <NotionRenderer blocks={blocks} />
+        </div>
+        <GiscusComments term={slug} />
+      </article>
+    </ContentLayout>
   );
 }

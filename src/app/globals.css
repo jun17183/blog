@@ -3,21 +3,20 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #fbfbfd;
-  --surface: #ffffff;
-  --surface-elevated: #f3f4f6;
-  --foreground: #111827;
-  --muted-foreground: #6b7280;
-  --faint: #9ca3af;
-  --border: #e5e7eb;
-  --border-strong: #d1d5db;
-  --accent: #4f46e5;
-  --accent-hover: #4338ca;
-  --accent-soft: rgba(79, 70, 229, 0.08);
+  --background: #f9f9f7;
+  --surface: #f9f9f7;
+  --surface-elevated: #efefec;
+  --foreground: #101010;
+  --muted-foreground: #6f6f6f;
+  --faint: #aaaaaa;
+  --border: #d4d4d4;
+  --border-strong: #111111;
+  --accent: #101010;
+  --accent-hover: #444444;
+  --accent-soft: rgba(16, 16, 16, 0.06);
   --accent-foreground: #ffffff;
   --card: var(--surface);
   --muted: var(--surface-elevated);
-
   /* Notion text/background colors (light) */
   --notion-gray: #787774;
   --notion-brown: #9f6b53;
@@ -41,21 +40,20 @@
 }
 
 .dark {
-  --background: #0f0f13;
-  --surface: #18181f;
-  --surface-elevated: #222230;
-  --foreground: #f3f4f6;
-  --muted-foreground: #9ca3af;
-  --faint: #6b7280;
-  --border: #2a2a35;
-  --border-strong: #3f3f4a;
-  --accent: #6366f1;
-  --accent-hover: #818cf8;
-  --accent-soft: rgba(99, 102, 241, 0.12);
-  --accent-foreground: #ffffff;
+  --background: #0f0f0f;
+  --surface: #0f0f0f;
+  --surface-elevated: #1c1c1c;
+  --foreground: #f2f2f2;
+  --muted-foreground: #9a9a9a;
+  --faint: #666666;
+  --border: #2e2e2e;
+  --border-strong: #f2f2f2;
+  --accent: #f2f2f2;
+  --accent-hover: #cccccc;
+  --accent-soft: rgba(242, 242, 242, 0.08);
+  --accent-foreground: #0f0f0f;
   --card: var(--surface);
   --muted: var(--surface-elevated);
-
   /* Notion text/background colors (dark) */
   --notion-gray: #9b9b9b;
   --notion-brown: #ba856f;
@@ -96,8 +94,8 @@
   --color-notion-code: var(--notion-code);
 
   --font-sans:
-    -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Text",
-    "Pretendard", "Segoe UI", Roboto, sans-serif;
+    "Pretendard", -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", Roboto, Arial, sans-serif;
   --font-mono:
     "SF Mono", ui-monospace, Menlo, monospace;
 }
@@ -113,7 +111,8 @@ body {
   letter-spacing: -0.01em;
 }
 
-body::before {
+/* 배경 그라데이션: 현재 디자인에서는 쓰지 않는다. .ambient-bg를 body에 붙이면 복원. */
+.ambient-bg::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -125,7 +124,7 @@ body::before {
     radial-gradient(50rem 40rem at 90% 90%, rgba(147, 112, 219, 0.08), transparent 50%);
 }
 
-.dark body::before {
+.dark .ambient-bg::before {
   background:
     radial-gradient(100rem 55rem at 10% 5%, rgba(120, 80, 220, 0.14), transparent 55%),
     radial-gradient(50rem 40rem at 90% 5%, rgba(120, 80, 220, 0.14), transparent 50%),
@@ -195,14 +194,28 @@ body::before {
 /* 빈 블록은 한 줄 높이. 리듬이 Notion 편집 화면과 같게 보이도록 한다.       */
 /* ------------------------------------------------------------------ */
 .notion-content {
-  font-size: 1rem;
-  line-height: 1.65;
+  font-size: 1.0625rem; /* 17px */
+  line-height: 1.85;
+  letter-spacing: -0.005em;
   overflow-wrap: anywhere;
 }
 
+/* 블록 간격: 위아래 패딩 + 마진으로 문단 사이 약 18px */
 .notion-block {
-  margin-block: 1px;
-  padding-block: 3px;
+  margin-block: 3px;
+  padding-block: 6px;
+}
+
+/* 인용 블록은 연속으로 오는 경우가 많아 사이를 더 띄운다 */
+.notion-content blockquote.notion-block {
+  margin-block: 14px;
+  padding-block: 8px;
+}
+
+/* 헤딩은 앞 문단과 충분히 떨어지고 뒤 문단과는 가깝게 */
+.notion-content :is(h2, h3, h4).notion-block {
+  padding-block: 0;
+  margin-bottom: 10px;
 }
 
 /* 부모 블록 아래 들여쓰기된 하위 블록 */
@@ -212,7 +225,11 @@ body::before {
 
 .notion-content ul,
 .notion-content ol {
-  margin-block: 1px;
+  margin-block: 4px;
+}
+
+.notion-content li.notion-block {
+  padding-block: 4px;
 }
 
 .notion-content li::marker {

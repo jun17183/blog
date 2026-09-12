@@ -1,4 +1,5 @@
 import { RichText } from "../RichText";
+import { headingAnchorId } from "../toc";
 import type {
   Heading1BlockObjectResponse,
   Heading2BlockObjectResponse,
@@ -17,9 +18,9 @@ interface Props {
 // Notion 기준: h1 1.875em / h2 1.5em / h3 1.25em, 위 여백 2em / 1.4em / 1em, 아래 여백은 한 블록 간격.
 // 글 제목이 <h1>이므로 Notion heading_1은 <h2>부터 시작한다.
 const HEADING_CONFIG = {
-  heading_1: { Tag: "h2" as const, className: "text-[1.875em] mt-[1.6em]" },
-  heading_2: { Tag: "h3" as const, className: "text-[1.5em] mt-[1.4em]" },
-  heading_3: { Tag: "h4" as const, className: "text-[1.25em] mt-[1em]" },
+  heading_1: { Tag: "h2" as const, className: "text-[1.7em] mt-[1.9em]" },
+  heading_2: { Tag: "h3" as const, className: "text-[1.4em] mt-[1.7em]" },
+  heading_3: { Tag: "h4" as const, className: "text-[1.2em] mt-[1.4em]" },
 };
 
 export function Heading({ block }: Props) {
@@ -32,7 +33,10 @@ export function Heading({ block }: Props) {
         : block.heading_3.rich_text;
 
   return (
-    <Tag className={`notion-block font-bold leading-[1.3] mb-1 whitespace-pre-wrap ${className}`}>
+    <Tag
+      id={headingAnchorId(block.id)}
+      className={`notion-block scroll-mt-24 font-bold leading-[1.3] mb-2 whitespace-pre-wrap ${className}`}
+    >
       <RichText richText={richText} />
     </Tag>
   );

@@ -12,10 +12,10 @@ export function BackButton() {
   return (
     <button
       onClick={() => router.back()}
-      className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-[13px] text-muted-foreground hover:text-foreground hover:bg-border cursor-pointer transition-all"
+      className="inline-flex items-center gap-1.5 text-[13px] text-faint hover:text-foreground cursor-pointer transition-colors"
     >
-      <ArrowLeft size={16} />
-      <span>뒤로가기</span>
+      <ArrowLeft size={14} />
+      <span>Back</span>
     </button>
   );
 }

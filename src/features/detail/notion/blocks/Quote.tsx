@@ -8,7 +8,7 @@ interface Props {
 
 export function Quote({ block, children }: Props) {
   return (
-    <blockquote className="notion-block border-l-[3px] border-foreground pl-[14px]">
+    <blockquote className="notion-block border-l-[3px] border-foreground pl-5">
       <p className="whitespace-pre-wrap">
         <RichText richText={block.quote.rich_text} />
       </p>
