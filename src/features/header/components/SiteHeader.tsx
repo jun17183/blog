@@ -16,25 +16,15 @@ export async function SiteHeader() {
   return (
     <header className="flex items-end justify-between gap-6 border-b border-border pb-6">
       <Link href="/" className="flex items-center gap-4 min-w-0">
-        {profile.avatar ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={profile.avatar}
-            alt=""
-            width={AVATAR_SIZE}
-            height={AVATAR_SIZE}
-            className="size-[46px] shrink-0 rounded object-cover bg-muted"
-          />
-        ) : (
-          <Image
-            src="/avatar.png"
-            alt=""
-            width={AVATAR_SIZE}
-            height={AVATAR_SIZE}
-            className="size-[46px] shrink-0 rounded object-cover"
-            priority
-          />
-        )}
+        {/* 원본(Notion 프록시)은 100KB대 JPEG라 46px로 줄여 캐시된 버전을 받는다. */}
+        <Image
+          src={profile.avatar ?? "/avatar.png"}
+          alt=""
+          width={AVATAR_SIZE}
+          height={AVATAR_SIZE}
+          className="size-[46px] shrink-0 rounded object-cover bg-muted"
+          preload
+        />
         <div className="min-w-0">
           <p className="text-[19px] font-bold tracking-[-0.02em] leading-tight truncate">
             {profile.name}
