@@ -35,7 +35,7 @@ export function Heading({ block }: Props) {
   return (
     <Tag
       id={headingAnchorId(block.id)}
-      className={`notion-block scroll-mt-24 font-semibold leading-[1.35] mb-2 whitespace-pre-wrap ${className}`}
+      className={`notion-block scroll-mt-8 font-semibold leading-[1.35] mb-2 whitespace-pre-wrap ${className}`}
     >
       <RichText richText={richText} />
     </Tag>

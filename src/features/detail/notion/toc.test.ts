@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractToc, headingAnchorId } from "./toc";
+import { extractToc, headingAnchorId, pickActiveHeading } from "./toc";
 import type { BlockWithChildren } from "@/lib/notion";
 
 function heading(type: "heading_1" | "heading_2" | "heading_3", id: string, text: string): BlockWithChildren {
@@ -33,5 +33,25 @@ describe("extractToc", () => {
       { id: headingAnchorId("a-1"), text: "서버", level: 1 },
       { id: headingAnchorId("a-2"), text: "컨테이너", level: 2 },
     ]);
+  });
+});
+
+describe("pickActiveHeading", () => {
+  const ids = ["a", "b", "c"];
+
+  it("아직 아무 헤딩도 기준선을 넘지 않았으면 첫 항목", () => {
+    expect(pickActiveHeading(ids, [300, 800, 1400], 120)).toBe("a");
+  });
+
+  it("기준선을 지난 마지막 헤딩을 고른다", () => {
+    expect(pickActiveHeading(ids, [-500, 40, 700], 120)).toBe("b");
+  });
+
+  it("목차 클릭으로 scroll-margin(32px) 위치에 멈춘 헤딩은 소수점 오차가 있어도 활성", () => {
+    expect(pickActiveHeading(ids, [-900, 32.4, 650], 64)).toBe("b");
+  });
+
+  it("빈 목록이면 null", () => {
+    expect(pickActiveHeading([], [], 120)).toBeNull();
   });
 });

@@ -32,3 +32,16 @@ export function extractToc(blocks: BlockWithChildren[]): TocItem[] {
   }
   return items;
 }
+
+/**
+ * 스크롤 위치에서 현재 목차 항목을 고른다: 기준선(threshold)을 지난 마지막 헤딩.
+ * threshold는 헤딩의 scroll-margin보다 넉넉해야 목차 클릭으로 멈춘 헤딩이 소수점 오차에도 활성이 된다.
+ */
+export function pickActiveHeading(ids: string[], tops: number[], threshold: number): string | null {
+  let current = ids[0] ?? null;
+  for (let i = 0; i < ids.length; i++) {
+    if (tops[i] <= threshold) current = ids[i];
+    else break;
+  }
+  return current;
+}
