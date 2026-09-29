@@ -2,6 +2,7 @@ import { cache } from "react";
 import { Client } from "@notionhq/client";
 import type { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import type { PostMeta } from "@/features/posts/types/post";
+import { sortByDateDesc } from "@/features/posts/utils/sort";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -87,9 +88,12 @@ export const getAllPosts = cache(async (): Promise<PostMeta[]> => {
     sorts: [{ property: "Date", direction: "descending" }],
   });
 
-  return response.results
-    .filter((page): page is PageObjectResponse => "properties" in page)
-    .map(pageToPostMeta);
+  // 날짜 없는 글의 위치를 Notion 정렬에 맡기지 않고 여기서 확정한다.
+  return sortByDateDesc(
+    response.results
+      .filter((page): page is PageObjectResponse => "properties" in page)
+      .map(pageToPostMeta),
+  );
 });
 
 export const getPostBySlug = cache(async (slug: string): Promise<PostMeta | null> => {
@@ -182,9 +186,7 @@ export async function getPostsByTag(tag: string): Promise<PostMeta[]> {
 
 export async function getPostsBySeries(series: string): Promise<PostMeta[]> {
   const posts = await getAllPosts();
-  return posts
-    .filter((post) => post.series === series)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  return posts.filter((post) => post.series === series);
 }
 
 export interface Profile {
