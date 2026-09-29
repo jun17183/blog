@@ -31,9 +31,6 @@ export default async function SeriesPage({ params }: SeriesPageProps) {
 
   return (
     <ContentLayout>
-      <p className="mb-6 text-xs text-faint">
-        {series} · {posts.length}
-      </p>
       <PostRowList posts={posts} />
     </ContentLayout>
   );

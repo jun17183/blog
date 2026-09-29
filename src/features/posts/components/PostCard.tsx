@@ -35,7 +35,7 @@ export function PostCard({ post, defaultThumbnail }: PostCardProps) {
           <h2 className="text-lg font-bold leading-snug tracking-tight line-clamp-2">
             {post.title}
           </h2>
-          <div className="mt-2 text-[11px] uppercase tracking-[0.06em] text-faint">
+          <div className="mt-2 text-[11px] uppercase tracking-[0.06em] text-muted-foreground">
             <span>{formatDate(post.date)}</span>
           </div>
           {post.description && (

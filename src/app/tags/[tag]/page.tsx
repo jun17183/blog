@@ -31,7 +31,7 @@ export default async function TagPage({ params }: TagPageProps) {
 
   return (
     <ContentLayout>
-      <p className="mb-6 text-xs text-faint">
+      <p className="mb-6 text-xs text-muted-foreground">
         #{tag} · {posts.length}
       </p>
       <PostRowList posts={posts} />

@@ -68,7 +68,7 @@ export default async function PostPage({ params }: PostPageProps) {
           <h1 className="text-[28px] font-semibold leading-[1.3] tracking-[-0.02em] md:text-[32px]">
             {post.title}
           </h1>
-          <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-faint">
+          <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted-foreground">
             <time dateTime={post.date}>{formatDateCompact(post.date)}</time>
             {post.tags.length > 0 && <span>{post.tags.join(" · ")}</span>}
           </div>

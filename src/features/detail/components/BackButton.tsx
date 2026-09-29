@@ -12,7 +12,7 @@ export function BackButton() {
   return (
     <button
       onClick={() => router.back()}
-      className="inline-flex items-center gap-1.5 text-[13px] text-faint hover:text-foreground cursor-pointer transition-colors"
+      className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
     >
       <ArrowLeft size={14} />
       <span>Back</span>

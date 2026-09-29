@@ -11,7 +11,7 @@ interface SeriesNavProps {
 const linkBase =
   "block whitespace-nowrap py-[7px] text-[15px] tracking-[-0.01em] transition-colors lg:whitespace-normal";
 const linkActive = "text-foreground";
-const linkInactive = "text-faint hover:text-muted-foreground";
+const linkInactive = "text-muted-foreground hover:text-foreground";
 
 /** 왼쪽 메뉴. "All." + 시리즈. 모바일에서는 가로 스크롤 한 줄. */
 export function SeriesNav({ seriesNames, activeSeries }: SeriesNavProps) {

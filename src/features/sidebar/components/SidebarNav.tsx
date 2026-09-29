@@ -31,7 +31,7 @@ export function SidebarNav({ totalCount, seriesList }: SidebarNavProps) {
         className={`${linkBase} ${isAllActive ? linkActive : linkInactive}`}
       >
         <span>All posts</span>
-        <span className="text-[11px] text-faint">{totalCount}</span>
+        <span className="text-[11px] text-muted-foreground">{totalCount}</span>
       </Link>
       {seriesList.map((series) => {
         const href = `/series/${encodeURIComponent(series.name)}`;
@@ -43,7 +43,7 @@ export function SidebarNav({ totalCount, seriesList }: SidebarNavProps) {
             className={`${linkBase} ${isActive ? linkActive : linkInactive}`}
           >
             <span>{series.name}</span>
-            <span className="text-[11px] text-faint">{series.count}</span>
+            <span className="text-[11px] text-muted-foreground">{series.count}</span>
           </Link>
         );
       })}

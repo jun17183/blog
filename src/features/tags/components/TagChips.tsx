@@ -21,7 +21,7 @@ export function TagChips({ tags }: TagChipsProps) {
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <span className="text-[11px] tracking-[0.08em] text-faint font-semibold mr-1">
+      <span className="text-[11px] tracking-[0.08em] text-muted-foreground font-semibold mr-1">
         Tags
 </span>
       <Link

@@ -3,13 +3,14 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f9f9f7;
-  --surface: #f9f9f7;
-  --surface-elevated: #efefec;
+  --background: #f7f8f9;
+  --surface: #f7f8f9;
+  --surface-elevated: #edeef0;
   --foreground: #101010;
-  --muted-foreground: #6f6f6f;
-  --faint: #aaaaaa;
-  --border: #d4d4d4;
+  /* 보조 텍스트(날짜·설명·메뉴·목차 등)는 이 한 색만 쓴다 */
+  --muted-foreground: #666666;
+  --link-hover: #24489c;
+  --border: #d7d9dc;
   --border-strong: #111111;
   --accent: #101010;
   --accent-hover: #444444;
@@ -44,8 +45,8 @@
   --surface: #0f0f0f;
   --surface-elevated: #1c1c1c;
   --foreground: #f2f2f2;
-  --muted-foreground: #9a9a9a;
-  --faint: #666666;
+  --muted-foreground: #999999;
+  --link-hover: #8fb0ff;
   --border: #2e2e2e;
   --border-strong: #f2f2f2;
   --accent: #f2f2f2;
@@ -83,7 +84,7 @@
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-faint: var(--faint);
+  --color-link-hover: var(--link-hover);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-card: var(--card);
