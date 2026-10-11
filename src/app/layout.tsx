@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { SiteHeader } from "@/features/header/components/SiteHeader";
+import { CornerCharacter } from "@/shared/components/CornerCharacter";
 import { getSiteUrl } from "@/shared/utils/site";
 import "./globals.css";
 
@@ -39,6 +40,7 @@ export default function RootLayout({
             </div>
             <main className="min-w-0">{children}</main>
           </div>
+          <CornerCharacter />
         </ThemeProvider>
       </body>
     </html>
