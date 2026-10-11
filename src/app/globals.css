@@ -3,8 +3,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f7f8f9;
-  --surface: #f7f8f9;
+  --background: #fefefe;
+  --surface: #fefefe;
   --surface-elevated: #edeef0;
   --foreground: #101010;
   /* 보조 텍스트(날짜·설명·메뉴·목차 등)는 이 한 색만 쓴다 */
