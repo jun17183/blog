@@ -67,14 +67,16 @@ export default async function PostPage({ params }: PostPageProps) {
     <ContentLayout activeSeries={post.series} right={<TableOfContents items={toc} />}>
       <BackButton />
       <article className="pt-8">
-        <header className="mb-12">
+        <header className="mb-8">
           <h1 className="text-[28px] font-semibold leading-[1.3] tracking-[-0.02em] md:text-[32px]">
             {post.title}
           </h1>
-          <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted-foreground">
-            <time dateTime={post.date}>{formatDateCompact(post.date)}</time>
-            {post.tags.length > 0 && <span>{post.tags.join(" · ")}</span>}
-          </div>
+          {(post.date || post.tags.length > 0) && (
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted-foreground">
+              {post.date && <time dateTime={post.date}>{formatDateCompact(post.date)}</time>}
+              {post.tags.length > 0 && <span>{post.tags.join(" · ")}</span>}
+            </div>
+          )}
         </header>
         <div className="notion-content">
           <NotionRenderer blocks={blocks} />
