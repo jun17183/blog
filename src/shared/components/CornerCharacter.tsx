@@ -9,8 +9,8 @@ export function CornerCharacter() {
       aria-hidden
       width={480}
       height={670}
-      sizes="240px"
-      className="pointer-events-none fixed right-0 bottom-0 hidden h-auto w-[min(240px,calc(50vw-400px))] select-none xl:block"
+      sizes="150px"
+      className="pointer-events-none fixed right-0 bottom-0 hidden h-auto w-[min(150px,calc(50vw-400px))] select-none xl:block"
     />
   );
 }

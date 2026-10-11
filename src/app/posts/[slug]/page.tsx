@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import { BackButton } from "@/features/detail/components/BackButton";
+import { PostNavigation } from "@/features/detail/components/PostNavigation";
 import { NotionRenderer } from "@/features/detail/notion/NotionRenderer";
 import { GiscusComments } from "@/features/comments/components/GiscusComments";
 import { TableOfContents } from "@/features/detail/components/TableOfContents";
 import { extractToc } from "@/features/detail/notion/toc";
+import { findAdjacentPosts } from "@/features/posts/utils/adjacent";
 import { ContentLayout } from "@/features/sidebar/components/ContentLayout";
 import { getPostBySlug, getPostBlocks, getAllPosts } from "@/lib/notion";
 import { formatDateCompact } from "@/shared/utils/date";
@@ -57,8 +59,9 @@ export default async function PostPage({ params }: PostPageProps) {
   const post = await getPostBySlug(slug);
   if (!post) notFound();
 
-  const blocks = await getPostBlocks(post.id);
+  const [blocks, posts] = await Promise.all([getPostBlocks(post.id), getAllPosts()]);
   const toc = extractToc(blocks);
+  const { prev, next } = findAdjacentPosts(posts, post.slug);
 
   return (
     <ContentLayout activeSeries={post.series} right={<TableOfContents items={toc} />}>
@@ -76,6 +79,7 @@ export default async function PostPage({ params }: PostPageProps) {
         <div className="notion-content">
           <NotionRenderer blocks={blocks} />
         </div>
+        <PostNavigation prev={prev} next={next} />
         <GiscusComments term={slug} />
       </article>
     </ContentLayout>
